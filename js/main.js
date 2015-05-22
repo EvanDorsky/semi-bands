@@ -7,7 +7,7 @@ function integrate(f) {
   return _.generate(function(i) {
       acc += f.get(i)/l;
       return acc;
-    }, l).memoize();
+    }, l);
 }
 
 var l = 100;
@@ -23,8 +23,6 @@ var Q = _.generate(function charge(x) {
 var efield = integrate(Q);
 
 var E = integrate(efield);
-console.log('E.toArray()');
-console.log(E.toArray());
 
 $(document).ready(function() {
   d3.select('body')
@@ -34,6 +32,6 @@ $(document).ready(function() {
   .data(E.toArray())
   .enter().append('circle')
   .attr('cx', function(d, i) {return i*3+1})
-  .attr('cy', function(d) {return d+599})
+  .attr('cy', function(d) {return l*l*d+599})
   .attr('r', 1)
 })
