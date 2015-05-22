@@ -1,32 +1,32 @@
-(function() {
-  _ = Lazy;
+_ = Lazy;
 
-  // integrate f from a to be with n even
-  function integrate(f, a, b, n) {
-    var h = (b - a)/n;
-    var s = f(a) + f(b);
+// integrate f from a to b with n steps
+function integrate(f, n) {
+  var acc = 0;
+  return _.range(0, n)
+    .map(function(i) {
+      acc += f.get(i);
+      return acc;
+    }).memoize();
+}
 
-    // odd numbers
-    s += _.range(1, n, 2)
-      .map(function(i) { return 4*f(a + i*h) })
-      .reduce(function(x, y) { return x + y });
+function atof() {
+  return 1;
+}
 
-    // even numbers
-    s += _.range(2, n-1, 2)
-      .map(function(i) { return 2*f(a + i*h) })
-      .reduce(function(x, y) { return x + y });
+var l = 100;
+var poses = [];
+var charge = _.generate(function charge(x) {
+  var pos =  x/(l-1) - .5;
+  var apos = Math.abs(pos);
+  if (apos < .2)
+    return pos == 0? 0 : apos/pos; // sign of x
 
-    return s * h/3;
-  }
+  return 0;
+}, l);
 
-  var cumulative = 0;
-  var time = _.range(100)
-  .map(function(i, x) {
-    cumulative += x;
-    return cumulative  
-  })
-  .toArray();
+var efield = integrate(charge, l);
 
-  console.log('time');
-  console.log(time);
-})()
+var E = integrate(efield, l);
+console.log('E');
+console.log(E);
