@@ -46,5 +46,6 @@ window.onload = function() {
   .append('svg').attr('width', w).attr('height', h)
   .append('g')
   .append('path')
+  .attr('class', 'line')
   .attr('d', eline(Energy))
 }
