@@ -9,10 +9,6 @@ function integrate(f) {
     }, f.size()).memoize();
 }
 
-function atof() {
-  return 1;
-}
-
 var l = 100;
 var poses = [];
 var charge = _.generate(function charge(x) {
