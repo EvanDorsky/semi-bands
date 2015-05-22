@@ -1,13 +1,12 @@
 _ = Lazy;
 
 // integrate f from a to b with n steps
-function integrate(f, n) {
+function integrate(f) {
   var acc = 0;
-  return _.range(0, n)
-    .map(function(i) {
+  return _.generate(function(i) {
       acc += f.get(i);
       return acc;
-    }).memoize();
+    }, f.size()).memoize();
 }
 
 function atof() {
@@ -25,9 +24,9 @@ var charge = _.generate(function charge(x) {
   return 0;
 }, l);
 
-var efield = integrate(charge, l);
+var efield = integrate(charge);
 
-var E = integrate(efield, l);
+var E = integrate(efield);
 
 $(document).ready(function() {
   d3.select('body')
@@ -36,7 +35,7 @@ $(document).ready(function() {
   .selectAll('circle')
   .data(E.toArray())
   .enter().append('circle')
-  .attr('cx', function(d, i) {return i*3})
-  .attr('cy', function(d) {return d+600})
+  .attr('cx', function(d, i) {return i*3+1})
+  .attr('cy', function(d) {return d+599})
   .attr('r', 1)
 })
