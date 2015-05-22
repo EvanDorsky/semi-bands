@@ -2,17 +2,17 @@ _ = Lazy;
 
 // integrate f from a to b with n steps
 function integrate(f) {
+  var l = f.size();
   var acc = 0;
   return _.generate(function(i) {
-      acc += f.get(i);
+      acc += f.get(i)/l;
       return acc;
-    }, f.size()).memoize();
+    }, l).memoize();
 }
 
 var l = 100;
-var poses = [];
-var charge = _.generate(function charge(x) {
-  var pos =  x/(l-1) - .5;
+var Q = _.generate(function charge(x) {
+  var pos =  2*x/(l-1) - 1;
   var apos = Math.abs(pos);
   if (apos < .2)
     return pos == 0? 0 : apos/pos; // sign of x
@@ -20,9 +20,11 @@ var charge = _.generate(function charge(x) {
   return 0;
 }, l);
 
-var efield = integrate(charge);
+var efield = integrate(Q);
 
 var E = integrate(efield);
+console.log('E.toArray()');
+console.log(E.toArray());
 
 $(document).ready(function() {
   d3.select('body')
