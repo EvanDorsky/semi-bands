@@ -24,7 +24,7 @@ var efield = integrate(Q);
 
 var E = integrate(efield);
 
-$(document).ready(function() {
+window.onload = function() {
   d3.select('body')
   .append('svg').attr('width', 600).attr('height', 600)
   .append('g')
@@ -34,4 +34,4 @@ $(document).ready(function() {
   .attr('cx', function(d, i) {return i*3+1})
   .attr('cy', function(d) {return l*l*d+599})
   .attr('r', 1)
-})
+}
