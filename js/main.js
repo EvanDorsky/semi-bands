@@ -25,13 +25,26 @@ var efield = integrate(Q);
 var E = integrate(efield);
 
 window.onload = function() {
+  var Energy = E.toArray();
+
+  var w = 600;
+  var h = 600;
+
+  var x = d3.scale.linear()
+    .domain([0, Energy.length])
+    .range([0, w]);
+
+  var y = d3.scale.linear()
+    .domain(d3.extent(Energy))
+    .range([0, h]);
+
+  var eline = d3.svg.line()
+    .x(function(d, i) { return x(i) })
+    .y(function(d) { return y(d) })
+
   d3.select('body')
-  .append('svg').attr('width', 600).attr('height', 600)
+  .append('svg').attr('width', w).attr('height', h)
   .append('g')
-  .selectAll('circle')
-  .data(E.toArray())
-  .enter().append('circle')
-  .attr('cx', function(d, i) {return i*3+1})
-  .attr('cy', function(d) {return l*l*d+599})
-  .attr('r', 1)
+  .append('path')
+  .attr('d', eline(Energy))
 }
