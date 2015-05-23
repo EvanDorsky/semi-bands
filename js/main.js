@@ -29,14 +29,15 @@ function makeplot(w, h) {
   .append('svg').attr('width', w).attr('height', h);
 }
 
-function plot(svg, label, data, subx, suby, yoff) {
+function plot(svg, label, data, numx, numy, ypos) {
   var x = d3.scale.linear()
     .domain([0, data.length])
-    .range([0, subx]);
+    .range([0, svg.attr('width')/numx]);
 
+  var h = svg.attr('height')/numy;
   var y = d3.scale.linear()
     .domain(d3.extent(data))
-    .range([yoff, yoff+suby]);
+    .range([ypos*h, (ypos+1)*h]);
 
   var eline = d3.svg.line()
     .x(function(d, i) { return x(i) })
@@ -50,7 +51,7 @@ function plot(svg, label, data, subx, suby, yoff) {
 
 window.onload = function() {
   var svg = makeplot(600, 600);
-  plot(svg, 'charge', Q.toArray(), 600, 200, 0);
-  plot(svg, 'field', efield.toArray(), 600, 200, 200);
-  plot(svg, 'energy', E.toArray(), 600, 200, 400);
+  plot(svg, 'charge', Q.toArray(), 1, 3, 0);
+  plot(svg, 'field', efield.toArray(), 1, 3, 1);
+  plot(svg, 'energy', E.toArray(), 1, 3, 2);
 }
