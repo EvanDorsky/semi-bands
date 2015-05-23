@@ -11,8 +11,8 @@ function integrate(f) {
 }
 
 // semiconductor properties
-var NA = ; // 1/cm^3
-var ND = ; // 1/cm^3
+var NA = 1e14; // 1/cm^3
+var ND = 1e16; // 1/cm^3
 var e0 = 8.8542e-12; // F/m
 var kS = 11.9;
 var q = 1.602e-19; // J
