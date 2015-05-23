@@ -18,7 +18,7 @@ var kS = 11.9;
 var q = 1.602e-19; // J
 var T = 300; // K
 var k = 1.381e-23; // J/K
-var ni = 1; // 1/cm^3(?) | p*n=ni^2
+var ni = 1e10; // 1/cm^3 | p*n=ni^2
 var V0 = k*T/q*Math.log((NA*ND)/(ni*ni)); // V
 var VA = 0; // V
 var W = Math.sqrt(2*e0/q*(1/NA + 1/ND)*(V0 - VA)); // cm?
