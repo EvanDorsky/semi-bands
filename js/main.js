@@ -7,12 +7,12 @@ function integrate(f) {
   return _.generate(function(i) {
       acc += f.get(i)/l;
       return acc;
-    }, l);
+    }, l).memoize();
 }
 
 // semiconductor properties
-var NA = 1e14; // 1/cm^3
-var ND = 1e16; // 1/cm^3
+var NA = 5e14; // 1/cm^3
+var ND = 1e14; // 1/cm^3
 var e0 = 8.8542e-12; // F/m
 var kS = 11.9;
 var q = 1.602e-19; // J
@@ -25,17 +25,24 @@ var W = Math.sqrt(2*kS*e0/q*(1/NA + 1/ND)*(V0 - VA)); // cm?
 var xp = W*ND/(NA + ND);
 var xn = W*NA/(NA + ND);
 
+var L = .02;
+
 var l = 500;
-var Q = _.generate(function charge(x) {
-  var pos =  2*x/(l-1) - 1;
-  var apos = Math.abs(pos);
-  if (apos < .2)
-    return pos == 0? 0 : -apos/pos; // sign of x
+var rho = _.generate(function charge(x) {
+  // convert from step [0 - 499] to position in cm [-.01 - .01]
+  var pos =  x/(l-1)*L - L/2;
+
+  if (-xp < pos && pos < 0)
+    return -q*NA;
+
+  if (0 < pos && pos < xn)
+    return q*ND;
 
   return 0;
 }, l);
 
-var efield = integrate(Q);
+var efield = integrate(rho)
+  .map(function(n) {return q*n/(kS*e0)});
 
 var E = integrate(efield);
 
@@ -66,7 +73,7 @@ function plot(svg, label, data, numx, numy, ypos) {
 
 window.onload = function() {
   var svg = makeplot(600, 600);
-  plot(svg, 'charge', Q.toArray(), 1, 3, 0);
+  plot(svg, 'charge', rho.toArray(), 1, 3, 0);
   plot(svg, 'field', efield.toArray(), 1, 3, 1);
   plot(svg, 'energy', E.toArray(), 1, 3, 2);
 }
