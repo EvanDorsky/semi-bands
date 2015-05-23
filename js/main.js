@@ -10,6 +10,21 @@ function integrate(f) {
     }, l);
 }
 
+// semiconductor properties
+var NA = ; // 1/cm^3
+var ND = ; // 1/cm^3
+var e0 = 8.8542e-12; // F/m
+var kS = 11.9;
+var q = 1.602e-19; // J
+var T = 300; // K
+var k = 1.381e-23; // J/K
+var ni = 1; // 1/cm^3(?) | p*n=ni^2
+var V0 = k*T/q*Math.log((NA*ND)/(ni*ni)); // V
+var VA = 0; // V
+var W = Math.sqrt(2*e0/q*(1/NA + 1/ND)*(V0 - VA)); // cm?
+var xp = W*ND/(NA + ND);
+var xn = W*NA/(NA + ND);
+
 var l = 500;
 var Q = _.generate(function charge(x) {
   var pos =  2*x/(l-1) - 1;
