@@ -10,7 +10,7 @@ function integrate(f) {
     }, l);
 }
 
-var l = 100;
+var l = 500;
 var Q = _.generate(function charge(x) {
   var pos =  2*x/(l-1) - 1;
   var apos = Math.abs(pos);
@@ -29,7 +29,7 @@ function makeplot(w, h) {
   .append('svg').attr('width', w).attr('height', h);
 }
 
-function plot(svg, data, subx, suby, yoff) {
+function plot(svg, label, data, subx, suby, yoff) {
   var x = d3.scale.linear()
     .domain([0, data.length])
     .range([0, subx]);
@@ -44,13 +44,13 @@ function plot(svg, data, subx, suby, yoff) {
 
   svg.append('g')
   .append('path')
-  .attr('class', 'line')
+  .attr('class', 'line '+label)
   .attr('d', eline(data))
 }
 
 window.onload = function() {
   var svg = makeplot(600, 600);
-  plot(svg, Q.toArray(), 600, 200, 0);
-  plot(svg, efield.toArray(), 600, 200, 200);
-  plot(svg, E.toArray(), 600, 200, 400);
+  plot(svg, 'charge', Q.toArray(), 600, 200, 0);
+  plot(svg, 'field', efield.toArray(), 600, 200, 200);
+  plot(svg, 'energy', E.toArray(), 600, 200, 400);
 }
