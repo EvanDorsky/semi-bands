@@ -15,7 +15,7 @@ var NA = 5e14; // 1/cm^3
 var ND = 1e14; // 1/cm^3
 var e0 = 8.8542e-12; // F/m
 var kS = 11.9;
-var q = 1.602e-19; // J
+var q = -1.602e-19; // J
 var T = 300; // K
 var k = 1.381e-23; // J/K
 var ni = 1e10; // 1/cm^3 | p*n=ni^2
