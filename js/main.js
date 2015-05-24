@@ -67,23 +67,46 @@ function depletion(NA, ND, VA) {
   }
 }
 
-function plotpn(pn) {
+function plotpn(pnjunc) {
   var chart = pnChart();
   d3.select('body')
     .append('div')
     .attr('id', 'rho')
-    .datum(pn.rho)
+    .datum(pnjunc.rho)
     .call(chart)
+
   d3.select('body')
     .append('div')
     .attr('id', 'efield')
-    .datum(pn.efield)
+    .datum(pnjunc.efield)
     .call(chart)
+
   d3.select('body')
     .append('div')
     .attr('id', 'E')
-    .datum(pn.E)
+    .datum(pnjunc.E)
     .call(chart)
+    .on('mousemove', function() {
+      var e = chart.yScale().invert(d3.mouse(this)[1])
+      var newpn = pn(NA, ND, e/q, L)
+
+      d3.select('#rho')
+      .datum(newpn.rho)
+      .call(chart)
+      
+      d3.select('#efield')
+      .datum(newpn.efield)
+      .call(chart)
+      
+      d3.select('#E')
+      .datum(newpn.E)
+      .call(chart)
+    })
+}
+
+function handleEclick(d, i, f) {
+  console.log('e');
+  console.log(d, i, f);
 }
 
 function makeplot(w, h) {
@@ -92,10 +115,10 @@ function makeplot(w, h) {
 }
 
 window.onload = function() {
-  var NA = 5e14; // 1/cm^3
-  var ND = 1e14; // 1/cm^3
-  var VA = 0;
-  var L = 0.02;
+  window.NA = 5e14; // 1/cm^3
+  window.ND = 1e14; // 1/cm^3
+  window.VA = 0;
+  window.L = 0.02;
 
   plotpn(pn(NA, ND, VA, L));
 }
@@ -111,12 +134,10 @@ function pnChart() {
   function chart(selection) {
     selection.each(function(data) {
 
-      // Update the x-scale.
       xScale
         .domain(d3.extent(data.pluck('x').toArray()))
         .range([0, width - margin.left - margin.right]);
 
-      // Update the y-scale.
       yScale
         .domain(d3.extent(data.pluck('y').toArray()))
         .range([height - margin.top - margin.bottom, 0]);
@@ -128,26 +149,21 @@ function pnChart() {
       var gEnter = svg.enter().append('svg').append('g');
       gEnter.append('path').attr('class', 'line');
 
-      // Update the outer dimensions.
       svg.attr('width', width)
          .attr('height', height);
 
-      // Update the inner dimensions.
       var g = svg.select('g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-      // Update the line path.
       g.select('.line')
         .attr('d', line);
     });
   }
 
-  // The x-accessor for the path generator; xScale ∘ xValue.
   function X(d) {
     return xScale(d.x);
   }
 
-  // The x-accessor for the path generator; yScale ∘ yValue.
   function Y(d) {
     return yScale(d.y);
   }
@@ -164,6 +180,12 @@ function pnChart() {
     return chart;
   };
 
+  chart.yScale = function(_) {
+    if (!arguments.length) return yScale;
+    yScale = _;
+    return chart;
+  };
+
   chart.height = function(_) {
     if (!arguments.length) return height;
     height = _;
@@ -171,4 +193,4 @@ function pnChart() {
   };
 
   return chart;
-}
+} // after http://bost.ocks.org/mike/chart/
