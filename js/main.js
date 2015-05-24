@@ -46,12 +46,13 @@ function pn(NA, ND, VA, L) {
       return { x: n.x, y: q*n.y/(kS*e0) }
     });
 
-  var E = integrate(efield).map(function(d) {return {x:d.x, y:-d.y}});
+  var E = integrate(efield).map(function(d) {return {x:d.x, y:-d.y/q}});
 
   return {
     rho: rho,
     efield: efield,
     E: E,
+    Vbi: dep.V0
   }
 }
 
@@ -87,8 +88,8 @@ function plotpn(pnjunc) {
     .datum(pnjunc.E)
     .call(chart)
     .on('mousemove', function() {
-      var e = chart.yScale().invert(d3.mouse(this)[1])
-      var newpn = pn(NA, ND, e/q, L)
+      var V = chart.yScale().invert(d3.mouse(this)[1]-20)
+      var newpn = pn(NA, ND, pnjunc.Vbi-V, L)
 
       d3.select('#rho')
       .datum(newpn.rho)
@@ -102,11 +103,6 @@ function plotpn(pnjunc) {
       .datum(newpn.E)
       .call(chart)
     })
-}
-
-function handleEclick(d, i, f) {
-  console.log('e');
-  console.log(d, i, f);
 }
 
 function makeplot(w, h) {
@@ -139,7 +135,7 @@ function pnChart() {
         .range([0, width - margin.left - margin.right]);
 
       yScale
-        .domain(d3.extent(data.pluck('y').toArray()))
+        .domain([0, .6])
         .range([height - margin.top - margin.bottom, 0]);
 
       // Select the svg element, if it exists.
@@ -183,6 +179,12 @@ function pnChart() {
   chart.yScale = function(_) {
     if (!arguments.length) return yScale;
     yScale = _;
+    return chart;
+  };
+
+  chart.xScale = function(_) {
+    if (!arguments.length) return xScale;
+    xScale = _;
     return chart;
   };
 
