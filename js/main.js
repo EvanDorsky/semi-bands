@@ -69,40 +69,49 @@ function depletion(NA, ND, VA) {
 }
 
 function plotpn(pnjunc) {
-  var chart = pnChart();
+  var rhoC = pnChart();
+
   d3.select('body')
     .append('div')
     .attr('id', 'rho')
     .datum(pnjunc.rho)
-    .call(chart)
+    .call(rhoC);
+
+  var efieldC = pnChart();
 
   d3.select('body')
     .append('div')
     .attr('id', 'efield')
     .datum(pnjunc.efield)
-    .call(chart)
+    .call(efieldC)
+
+  var EC = pnChart();
 
   d3.select('body')
     .append('div')
     .attr('id', 'E')
     .datum(pnjunc.E)
-    .call(chart)
+    .call(EC)
     .on('mousemove', function() {
-      var V = chart.yScale().invert(d3.mouse(this)[1]-20)
+      var V = EC.yScale().invert(d3.mouse(this)[1]-EC.margin().bottom)
+      if (V<.05)
+        return
+
       var newpn = pn(NA, ND, pnjunc.Vbi-V, L)
 
       d3.select('#rho')
       .datum(newpn.rho)
-      .call(chart)
+      .call(rhoC.update)
       
       d3.select('#efield')
       .datum(newpn.efield)
-      .call(chart)
+      .call(efieldC.update)
       
       d3.select('#E')
       .datum(newpn.E)
-      .call(chart)
+      .call(EC.update)
     })
+
 }
 
 function makeplot(w, h) {
@@ -135,7 +144,7 @@ function pnChart() {
         .range([0, width - margin.left - margin.right]);
 
       yScale
-        .domain([0, .6])
+        .domain(d3.extent(data.pluck('y').toArray()))
         .range([height - margin.top - margin.bottom, 0]);
 
       // Select the svg element, if it exists.
@@ -155,6 +164,16 @@ function pnChart() {
         .attr('d', line);
     });
   }
+
+  chart.update = function(selection) {
+    selection.each(function(data) {
+
+    var svg = d3.select(this).selectAll('svg').data([data.toArray()]);
+    svg.select('g').select('.line')
+      .attr('d', line)
+    });
+    return chart;
+  };
 
   function X(d) {
     return xScale(d.x);
@@ -185,6 +204,12 @@ function pnChart() {
   chart.xScale = function(_) {
     if (!arguments.length) return xScale;
     xScale = _;
+    return chart;
+  };
+
+  chart.margin = function(_) {
+    if (!arguments.length) return margin;
+    margin = _;
     return chart;
   };
 
