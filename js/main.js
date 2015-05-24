@@ -23,7 +23,7 @@ var NA = 5e14; // 1/cm^3
 var ND = 1e14; // 1/cm^3
 var e0 = 8.8542e-12; // F/m
 var kS = 11.9;
-var q = -1.602e-19; // J
+var q = 1.602e-19; // J
 var T = 300; // K
 var k = 1.381e-23; // J/K
 var ni = 1e10; // 1/cm^3 | p*n=ni^2
@@ -64,7 +64,7 @@ var efield = integrate(rho)
     }
   });
 
-var E = integrate(efield);
+var E = integrate(efield).map(function(d) {return {x:d.x, y:-d.y}});
 
 function makeplot(w, h) {
   return d3.select('body')
@@ -79,7 +79,7 @@ function plot(svg, label, data, numx, numy, ypos) {
   var h = svg.attr('height')/numy;
   var y = d3.scale.linear()
     .domain(d3.extent(data.pluck('y').toArray()))
-    .range([ypos*h, (ypos+1)*h]);
+    .range([(ypos+1)*h, ypos*h]);
 
   var eline = d3.svg.line()
     .x(function(d) { return x(d.x) })
