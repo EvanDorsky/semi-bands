@@ -67,35 +67,28 @@ function depletion(NA, ND, VA) {
   }
 }
 
-function plotpn(pn, svg) {
-  plot(svg, 'charge', pn.rho, 1, 3, 0);
-  plot(svg, 'field', pn.efield, 1, 3, 1);
-  plot(svg, 'energy', pn.E, 1, 3, 2);
+function plotpn(pn) {
+  var chart = pnChart();
+  d3.select('body')
+    .append('div')
+    .attr('id', 'rho')
+    .datum(pn.rho)
+    .call(chart)
+  d3.select('body')
+    .append('div')
+    .attr('id', 'efield')
+    .datum(pn.efield)
+    .call(chart)
+  d3.select('body')
+    .append('div')
+    .attr('id', 'E')
+    .datum(pn.E)
+    .call(chart)
 }
 
 function makeplot(w, h) {
   return d3.select('body')
   .append('svg').attr('width', w).attr('height', h);
-}
-
-function plot(svg, label, data, numx, numy, ypos) {
-  var x = d3.scale.linear()
-    .domain(d3.extent(data.pluck('x').toArray()))
-    .range([0, svg.attr('width')/numx]);
-
-  var h = svg.attr('height')/numy;
-  var y = d3.scale.linear()
-    .domain(d3.extent(data.pluck('y').toArray()))
-    .range([(ypos+1)*h, ypos*h]);
-
-  var eline = d3.svg.line()
-    .x(function(d) { return x(d.x) })
-    .y(function(d) { return y(d.y) })
-
-  svg.append('g')
-  .append('path')
-  .attr('class', 'line '+label)
-  .attr('d', eline(data.toArray()))
 }
 
 window.onload = function() {
@@ -104,10 +97,78 @@ window.onload = function() {
   var VA = 0;
   var L = 0.02;
 
-  var svg = makeplot(600, 600);
-  plotpn(pn(NA, ND, VA, L), svg);
-  $('.line').mousemove(function(e) {
-    var VA = -e.pageY/100;
-    plotpn(pn(NA, ND, VA, L), svg);
-  })
+  plotpn(pn(NA, ND, VA, L));
+}
+
+function pnChart() {
+  var margin = {top: 20, right: 20, bottom: 20, left: 20},
+    width = 760,
+    height = 120,
+    xScale = d3.scale.linear(),
+    yScale = d3.scale.linear(),
+    line = d3.svg.line().x(X).y(Y);
+
+  function chart(selection) {
+    selection.each(function(data) {
+
+      // Update the x-scale.
+      xScale
+        .domain(d3.extent(data.pluck('x').toArray()))
+        .range([0, width - margin.left - margin.right]);
+
+      // Update the y-scale.
+      yScale
+        .domain(d3.extent(data.pluck('y').toArray()))
+        .range([height - margin.top - margin.bottom, 0]);
+
+      // Select the svg element, if it exists.
+      var svg = d3.select(this).selectAll('svg').data([data.toArray()]);
+
+      // Otherwise, create the skeletal chart.
+      var gEnter = svg.enter().append('svg').append('g');
+      gEnter.append('path').attr('class', 'line');
+
+      // Update the outer dimensions.
+      svg.attr('width', width)
+         .attr('height', height);
+
+      // Update the inner dimensions.
+      var g = svg.select('g')
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+      // Update the line path.
+      g.select('.line')
+        .attr('d', line);
+    });
+  }
+
+  // The x-accessor for the path generator; xScale ∘ xValue.
+  function X(d) {
+    return xScale(d.x);
+  }
+
+  // The x-accessor for the path generator; yScale ∘ yValue.
+  function Y(d) {
+    return yScale(d.y);
+  }
+
+  chart.margin = function(_) {
+    if (!arguments.length) return margin;
+    margin = _;
+    return chart;
+  };
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  };
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
+    return chart;
+  };
+
+  return chart;
 }
