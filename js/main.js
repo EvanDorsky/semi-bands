@@ -5,7 +5,12 @@ function integrate(f) {
   var l = f.size();
   var acc = 0;
   return _.generate(function(i) {
-      acc += f.get(i).y/l;
+      var dx = 0;
+      if (i == 0)
+        dx = f.get(i+1).x-f.get(i).x;
+      else
+        dx = f.get(i).x-f.get(i-1).x;
+      acc += f.get(i).y*dx;
       return {
         x: f.get(i).x,
         y: acc
@@ -30,10 +35,8 @@ var xn = W*NA/(NA + ND);
 
 var L = .02;
 
-var lL = 100;
-var lR = 100;
-var rho = _.range(-L/2, 0, L/(2*lL))
-  .concat(_.range(0, L/2, L/(2*lR)))
+var rho = _.range(-L/2, 0, L/2*xp)
+  .concat(_.range(0, L/2, L/2*xn))
   .map(function charge(x) {
     if (-xp < x && x < 0)
       return {
