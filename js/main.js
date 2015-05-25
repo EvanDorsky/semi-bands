@@ -48,15 +48,12 @@ function pnJunction(props) {
 
       var dep = depletion(NA, ND, VA);
       junc.Vbi = dep.V0;
-      console.log('dep');
-      console.log(dep);
 
-      junc.rho = _.range(0, L/2, dep.xp/10>1e-4?dep.xp/10:dep.xp/2).map(function(x){return -x}).reverse()
-        .concat(_.range(0, L/2, dep.xn/10>1e-4?dep.xn/10:dep.xn/2))
+      junc.rho = _.range(0, L/2, dep.xp/10).map(function(x){return -x}).reverse()
+        .concat(_.range(0, L/2, dep.xn/10))
         .map(function charge(x) {
-          if (-dep.xp < x && x <= 0) {
+          if (-dep.xp < x && x <= 0)
             return { x: x, y: -q*NA };
-          }
 
           if (0 < x && x <= dep.xn)
             return { x: x, y: q*ND };
@@ -68,8 +65,6 @@ function pnJunction(props) {
         .map(function(n) {
           return { x: n.x, y: q*n.y/(kS*e0), dx:n.dx }
         });
-      console.log('junc.rho.pluck("y").toArray()');
-      console.log(junc.rho.pluck("y").toArray());
 
       junc.E = integrate(junc.efield).map(function(d) {return {x:d.x, y:-d.y/q}});
     }
@@ -158,7 +153,7 @@ function pnChart(junc) {
     }
   };
 
-  chart.rhoC.line().interpolate('step-after')
+  chart.rhoC.line().interpolate('step')
   d3.select('body')
     .append('div')
     .attr('id', 'rho')
@@ -215,7 +210,13 @@ function semiChart() {
 
       // Otherwise, create the skeletal chart.
       var gEnter = svg.enter().append('svg').append('g');
-      gEnter.append('path').attr('class', 'line');
+      // gEnter.append('path').attr('class', 'line');
+      svg.select('g').selectAll('circle')
+      .data(data.toArray())
+      .enter().append('circle')
+      .attr('cx', function(d) {return X(d)})
+      .attr('cy', function(d) {return Y(d)})
+      .attr('r', 2)
 
       svg.attr('width', width)
          .attr('height', height);
@@ -228,12 +229,25 @@ function semiChart() {
   chart.update = function(selection) {
     selection.each(function(data) {
 
-    var svg = d3.select(this).selectAll('svg').data([data.toArray()]);
-    svg.select('g').select('.line')
-      .attr('d', line)
-    });
-    return chart;
-  };
+      // var svg = d3.select(this).selectAll('svg').data([data.toArray()]);
+      var svg = d3.select(this).selectAll('svg');
+      // svg.select('g').select('.line')
+      //   .attr('d', line)
+      // });
+      var upd = svg.select('g').selectAll('circle')
+      .data(data.toArray())
+
+      upd.enter().append('circle')
+
+      upd.attr('cx', function(d) {return X(d)})
+      .attr('cy', function(d) {return Y(d)})
+      .attr('r', 2)
+
+      upd.exit().remove()
+
+      return chart;
+    })
+  }
 
   function X(d) {
     return xScale(d.x);
