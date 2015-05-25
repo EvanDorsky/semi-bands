@@ -120,9 +120,19 @@ window.onload = function() {
     .on('click', function() {
       var NAnew = Number(d3.select('input.NA')
         .property('value'));
-      PNC.junc.NA(NAnew);
+      PNC.update({
+        NA: NAnew
+      });
     })
 
+  d3.select('button.ND')
+    .on('click', function() {
+      var NDnew = Number(d3.select('input.ND')
+        .property('value'));
+      PNC.update({
+        ND: NDnew
+      });
+    })
 }
 
 function pnChart(junc) {
@@ -133,7 +143,11 @@ function pnChart(junc) {
     rhoC: semiChart(),
     efieldC: semiChart(),
     EC: semiChart(),
-    update: function updatepnChart() {
+    update: function updatepnChart(opts) {
+      Object.keys(opts).forEach(function(key) {
+        chart.junc[key](opts[key])
+      });
+
       d3.select('#rho')
       .datum(chart.junc.rho)
       .call(chart.rhoC.update)
@@ -173,8 +187,9 @@ function pnChart(junc) {
       if (V<.05)
         return
 
-      chart.junc.VA(chart.junc.Vbi-V);
-      chart.update()
+      chart.update({
+        VA: chart.junc.Vbi-V
+      });
     });
 
   return chart
