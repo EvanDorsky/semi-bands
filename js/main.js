@@ -114,14 +114,15 @@ window.onload = function() {
     L: L
   });
 
+  var PNC = pnChart(junction);
+
   d3.select('button.NA')
     .on('click', function() {
-      // var NAnew = parseInt(d3.select('input.NA')
-      //   .property('value'))
-      // updatepnPlot
+      var NAnew = Number(d3.select('input.NA')
+        .property('value'));
+      PNC.junc.NA(NAnew);
     })
 
-  var PNC = pnChart(junction);
 }
 
 function pnChart(junc) {
