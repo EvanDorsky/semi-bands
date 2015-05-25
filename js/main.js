@@ -26,54 +26,6 @@ var T = 300; // K
 var k = 1.381e-23; // J/K
 var ni = 1e10; // 1/cm^3 | p*n=ni^2
 
-function updatepnPlot(newpn, rhoC, efieldC, EC) {
-  d3.select('#rho')
-  .datum(newpn.rho)
-  .call(rhoC.update)
-  
-  d3.select('#efield')
-  .datum(newpn.efield)
-  .call(efieldC.update)
-  
-  d3.select('#E')
-  .datum(newpn.E)
-  .call(EC.update)
-}
-
-function plotpn(pnjunc) {
-  var rhoC = pnChart();
-  d3.select('body')
-    .append('div')
-    .attr('id', 'rho')
-    .datum(pnjunc.rho)
-    .call(rhoC)
-    .call(rhoC.update)
-
-  var efieldC = pnChart();
-  d3.select('body')
-    .append('div')
-    .attr('id', 'efield')
-    .datum(pnjunc.efield)
-    .call(efieldC)
-    .call(efieldC.update)
-
-  var EC = pnChart();
-  d3.select('body')
-    .append('div')
-    .attr('id', 'E')
-    .datum(pnjunc.E)
-    .call(EC)
-    .call(EC.update)
-    .on('mousemove', function() {
-      var V = EC.yScale().invert(d3.mouse(this)[1]-EC.margin().bottom)
-      if (V<.05)
-        return
-
-      pnjunc.VA(pnjunc.Vbi-V);
-      updatepnPlot(pnjunc, rhoC, efieldC, EC)
-    })
-}
-
 function pnJunction(props) {
   var depletion = function dep(NA, ND, VA) {
     var V0 = k*T/q*Math.log((NA*ND)/(ni*ni)); // V
@@ -129,7 +81,7 @@ function pnJunction(props) {
   // generate getters/setters
   Object.keys(p).forEach(function(key) {
     junc[key] = function(_) {
-      if (!arguments.length) return junc;
+      if (!arguments.length) return p[key];
       p[key] = _;
       junc.update();
       return junc;
@@ -143,6 +95,9 @@ function pnJunction(props) {
 function makeplot(w, h) {
   return d3.select('body')
   .append('svg').attr('width', w).attr('height', h);
+}
+
+function plotpn(pnjunc) {
 }
 
 window.onload = function() {
@@ -166,10 +121,65 @@ window.onload = function() {
       // updatepnPlot
     })
 
-  plotpn(junction);
+  var PNC = pnChart(junction);
 }
 
-function pnChart() {
+function pnChart(junc) {
+  if (!arguments.length)
+    console.error('Requires a pn junction!');
+  var chart = {
+    junc: junc,
+    rhoC: semiChart(),
+    efieldC: semiChart(),
+    EC: semiChart(),
+    update: function updatepnChart() {
+      d3.select('#rho')
+      .datum(chart.junc.rho)
+      .call(chart.rhoC.update)
+      
+      d3.select('#efield')
+      .datum(chart.junc.efield)
+      .call(chart.efieldC.update)
+      
+      d3.select('#E')
+      .datum(chart.junc.E)
+      .call(chart.EC.update)
+    }
+  };
+
+  d3.select('body')
+    .append('div')
+    .attr('id', 'rho')
+    .datum(chart.junc.rho)
+    .call(chart.rhoC)
+    .call(chart.rhoC.update);
+
+  d3.select('body')
+    .append('div')
+    .attr('id', 'efield')
+    .datum(chart.junc.efield)
+    .call(chart.efieldC)
+    .call(chart.efieldC.update);
+
+  d3.select('body')
+    .append('div')
+    .attr('id', 'E')
+    .datum(chart.junc.E)
+    .call(chart.EC)
+    .call(chart.EC.update)
+    .on('mousemove', function() {
+      var V = chart.EC.yScale().invert(d3.mouse(this)[1]-chart.EC.margin().bottom)
+      if (V<.05)
+        return
+
+      chart.junc.VA(chart.junc.Vbi-V);
+      chart.update()
+    });
+
+  return chart
+}
+
+function semiChart() {
   var margin = {top: 20, right: 20, bottom: 20, left: 20},
     width = 760,
     height = 120,
