@@ -161,6 +161,7 @@ function pnChart(junc) {
     }
   };
 
+  chart.rhoC.line().interpolate('step-after')
   d3.select('body')
     .append('div')
     .attr('id', 'rho')
@@ -248,6 +249,12 @@ function semiChart() {
   chart.margin = function(_) {
     if (!arguments.length) return margin;
     margin = _;
+    return chart;
+  };
+
+  chart.line = function(_) {
+    if (!arguments.length) return line;
+    line = _;
     return chart;
   };
 
