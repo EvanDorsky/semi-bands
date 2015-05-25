@@ -48,14 +48,17 @@ function pnJunction(props) {
 
       var dep = depletion(NA, ND, VA);
       junc.Vbi = dep.V0;
+      console.log('dep');
+      console.log(dep);
 
-      junc.rho = _.range(-L/2, 0, L/2*dep.xp)
-        .concat(_.range(0, L/2, L/2*dep.xn))
+      junc.rho = _.range(0, L/2, dep.xp/10>1e-4?dep.xp/10:dep.xp/2).map(function(x){return -x}).reverse()
+        .concat(_.range(0, L/2, dep.xn/10>1e-4?dep.xn/10:dep.xn/2))
         .map(function charge(x) {
-          if (-dep.xp < x && x < 0)
-            return { x: x,y: -q*NA };
+          if (-dep.xp < x && x <= 0) {
+            return { x: x, y: -q*NA };
+          }
 
-          if (0 < x && x < dep.xn)
+          if (0 < x && x <= dep.xn)
             return { x: x, y: q*ND };
 
           return { x: x, y: 0 };
@@ -63,8 +66,10 @@ function pnJunction(props) {
 
       junc.efield = integrate(junc.rho)
         .map(function(n) {
-          return { x: n.x, y: q*n.y/(kS*e0) }
+          return { x: n.x, y: q*n.y/(kS*e0), dx:n.dx }
         });
+      console.log('junc.rho.pluck("y").toArray()');
+      console.log(junc.rho.pluck("y").toArray());
 
       junc.E = integrate(junc.efield).map(function(d) {return {x:d.x, y:-d.y/q}});
     }
