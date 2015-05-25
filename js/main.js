@@ -97,14 +97,6 @@ function pnJunction(props) {
   return junc;
 }
 
-function makeplot(w, h) {
-  return d3.select('body')
-  .append('svg').attr('width', w).attr('height', h);
-}
-
-function plotpn(pnjunc) {
-}
-
 window.onload = function() {
   var junction = new pnJunction({
     NA: 1e14,
