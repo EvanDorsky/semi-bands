@@ -106,7 +106,6 @@ function plotpn(pnjunc) {
 }
 
 window.onload = function() {
-  // init options currently ignored
   var junction = new pnJunction({
     NA: 1e14,
     ND: 4e14,
