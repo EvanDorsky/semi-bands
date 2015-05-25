@@ -78,6 +78,11 @@ function pnJunction(props) {
     L: 0.02
   }
 
+  if (arguments.length)
+    Object.keys(props).forEach(function(key) {
+      p[key] = props[key];
+    });
+
   // generate getters/setters
   Object.keys(p).forEach(function(key) {
     junc[key] = function(_) {
@@ -101,17 +106,12 @@ function plotpn(pnjunc) {
 }
 
 window.onload = function() {
-  var NA = 5e14; // 1/cm^3
-  var ND = 1e14; // 1/cm^3
-  var VA = 0;
-  var L = 0.02;
-
   // init options currently ignored
   var junction = new pnJunction({
-    NA: NA,
-    ND: ND,
-    VA: VA,
-    L: L
+    NA: 1e14,
+    ND: 4e14,
+    VA: 0,
+    L: .02
   });
 
   var PNC = pnChart(junction);
