@@ -74,14 +74,26 @@ function PolyFunc(_polys) {
   var func = {
     polys: _polys,
     int: function() {
-      return func.polys.map(function(spec) {
-        return spec.poly.int()
+      func.polys = func.polys.map(function(spec) {
+        console.log('spec');
+        console.log(spec);
+        return {
+          poly: spec.poly.int(),
+          range: spec.range
+        }
       })
+
+      return func;
     },
     diff: function() {
-      return func.polys.map(function(spec) {
-        return spec.poly.diff()
+      func.polys = func.polys.map(function(spec) {
+        return {
+          poly: spec.poly.diff(),
+          range: spec.range
+        }
       })
+      
+      return func;
     },
     sample: function(dx) {
       return func.polys.map(function(spec) {
@@ -141,21 +153,17 @@ function pnJunction(props) {
           poly: Poly([0]),
           range: [dep.xn, L/2]
         }
-      ]);
+      ])
 
-      console.log('junc.rho');
-      console.log(junc.rho);
-      console.log('junc.rho.int()');
-      console.log(junc.rho.int());
-      console.log('junc.rho.sample(.0001)');
-      console.log(junc.rho.sample(.0001));
+      junc.efield = junc.rho
+      junc.efield.int()
 
-      junc.efield = integrate(junc.rho)
-        .map(function(n) {
-          return { x: n.x, y: q*n.y/(kS*e0), dx:n.dx }
-        });
+      junc.E = junc.efield
+      junc.E.int()
 
-      junc.E = integrate(junc.efield).map(function(d) {return {x:d.x, y:-d.y/q}});
+      junc.rho = _(junc.rho.sample(p.dx))
+      junc.efield = _(junc.efield.sample(p.dx))
+      junc.E = _(junc.E.sample(p.dx))
     }
   }
 
@@ -164,7 +172,8 @@ function pnJunction(props) {
     NA: 5e14,
     ND: 1e14,
     VA: 0,
-    L: 0.02
+    L: 0.02,
+    dx: .0001
   }
 
   if (arguments.length)
