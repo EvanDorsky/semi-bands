@@ -15,12 +15,12 @@ function Poly(_coefs) {
 
       return poly;
     },
-    int: function() {
+    int: function(C) {
       var icoefs = poly.coefs;
       for (var i in icoefs)
         icoefs[i] /= Number(i)+2;
 
-      icoefs.unshift(0);
+      icoefs.unshift(C);
       poly.coefs = icoefs;
 
       return poly;
@@ -46,6 +46,13 @@ function Poly(_coefs) {
           }
         }).toArray()
       }
+    },
+    sampledAt: function(x) {
+      return _(poly.coefs).map(function(coef, i) {
+        return coef*Math.pow(x, i);
+      }).memoize().reduce(function(x,y){
+        return x+y
+      });
     }
   }
 
@@ -56,12 +63,19 @@ function PolyFunc(_polys) {
   var func = {
     polys: _polys,
     int: function() {
-      func.polys = func.polys.map(function(spec) {
-        return {
-          poly: spec.poly.int(),
-          range: spec.range
-        }
-      })
+      var temp = [{
+        poly: func.polys[0].poly.int(0),
+        range: func.polys[0].range
+      }];
+      for (var i = 1; i < func.polys.length; i++) {
+        var r = func.polys[i].range;
+        temp.push({
+          poly: func.polys[i].poly.int(temp[i-1].poly.sampledAt(r[0])),
+          range: r
+        })
+      }
+
+      func.polys = temp;
 
       return func;
     },
