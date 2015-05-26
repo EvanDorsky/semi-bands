@@ -196,8 +196,8 @@ function pnJunction(props) {
       ])
 
       junc.rho = _(rho.sampled(p.dx))
-      junc.efield = _(rho.int(0).sampled(p.dx))
-      junc.E = _(rho.int(0).sampled(p.dx))
+      junc.efield = _(rho.int(0).mult(q/(kS*e0)).sampled(p.dx))
+      junc.E = _(rho.int(0).div(-q).sampled(p.dx))
     }
   }
 
