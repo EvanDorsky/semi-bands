@@ -51,7 +51,7 @@ function Poly(_coefs) {
 
         var Y = X.map(function(x) {
           return _(poly.coefs).map(function(coef, i) {
-            return coef*Math.pow(x, i+1);
+            return coef*Math.pow(x, i);
           }).memoize().reduce(function(x,y){
             return x+y
           });
@@ -156,10 +156,10 @@ function pnJunction(props) {
       ])
 
       junc.efield = junc.rho
-      junc.efield.int()
+      // junc.efield.int()
 
       junc.E = junc.efield
-      junc.E.int()
+      // junc.E.int()
 
       junc.rho = _(junc.rho.sample(p.dx))
       junc.efield = _(junc.efield.sample(p.dx))
