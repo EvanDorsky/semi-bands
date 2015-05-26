@@ -34,9 +34,9 @@ function Poly(_coefs) {
         var X = _.range(a, b, dx)
 
         var Y = X.map(function(x) {
-          return _(poly.coefs).map(function(coef, i) {
+          return poly.coefs.map(function(coef, i) {
             return coef*Math.pow(x, i)
-          }).memoize().reduce(function(x,y){
+          }).reduce(function(x,y){
             return x+y
           })
         })
@@ -46,8 +46,22 @@ function Poly(_coefs) {
             x: x[0],
             y: x[1]
           }
-        }).toArray()
+        })
       }
+    },
+    mult: function(a) {
+      poly.coefs = poly.coefs.map(function(coef) {
+        return coef*a
+      })
+
+      return poly
+    },
+    div: function(a) {
+      poly.coefs = poly.coefs.map(function(coef) {
+        return coef/a
+      })
+
+      return poly
     },
     sampledAt: function(x) {
       return _(poly.coefs).map(function(coef, i) {
@@ -92,6 +106,26 @@ function PolyFunc(_polys) {
       func.polys = func.polys.map(function(spec) {
         return {
           poly: spec.poly.diff(),
+          range: spec.range
+        }
+      })
+      
+      return func
+    },
+    mult: function(a) {
+      func.polys = func.polys.map(function(spec) {
+        return {
+          poly: spec.poly.mult(a),
+          range: spec.range
+        }
+      })
+      
+      return func
+    },
+    div: function(a) {
+      func.polys = func.polys.map(function(spec) {
+        return {
+          poly: spec.poly.div(a),
           range: spec.range
         }
       })
