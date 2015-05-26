@@ -1,23 +1,5 @@
 _ = Lazy;
 
-// integrate f from a to b with n steps
-function integrate(f) {
-  var l = f.size();
-  var acc = 0;
-  return _.generate(function(i) {
-      var dx = 0;
-      if (i == 0)
-        dx = f.get(i+1).x-f.get(i).x;
-      else
-        dx = f.get(i).x-f.get(i-1).x;
-      acc += f.get(i).y*dx;
-      return {
-        x: f.get(i).x,
-        y: acc
-      };
-    }, l).memoize();
-}
-
 // representation of a polynomial function
 // coefs = [a0, a1, a2, a3, ...]
 function Poly(_coefs) {
@@ -43,7 +25,7 @@ function Poly(_coefs) {
 
       return poly;
     },
-    sample: function(range, dx) {
+    sampled: function(range, dx) {
       var a = range[0];
       var b = range[range.length-1];
       if (arguments.length === 2) {
@@ -75,8 +57,6 @@ function PolyFunc(_polys) {
     polys: _polys,
     int: function() {
       func.polys = func.polys.map(function(spec) {
-        console.log('spec');
-        console.log(spec);
         return {
           poly: spec.poly.int(),
           range: spec.range
@@ -95,9 +75,12 @@ function PolyFunc(_polys) {
       
       return func;
     },
-    sample: function(dx) {
+    copy: function() {
+      return new PolyFunc(func.polys)
+    },
+    sampled: function(dx) {
       return func.polys.map(function(spec) {
-        return spec.poly.sample(spec.range, dx)
+        return spec.poly.sampled(spec.range, dx)
       }).reduce(function(x, y) { return x.concat(y) })
     }
   }
@@ -136,7 +119,7 @@ function pnJunction(props) {
       var dep = depletion(NA, ND, VA);
       junc.Vbi = dep.V0;
 
-      junc.rho = PolyFunc([
+      var rho = new PolyFunc([
         {
           poly: Poly([0]),
           range: [-L/2, -dep.xp]
@@ -155,15 +138,9 @@ function pnJunction(props) {
         }
       ])
 
-      junc.efield = junc.rho
-      // junc.efield.int()
-
-      junc.E = junc.efield
-      // junc.E.int()
-
-      junc.rho = _(junc.rho.sample(p.dx))
-      junc.efield = _(junc.efield.sample(p.dx))
-      junc.E = _(junc.E.sample(p.dx))
+      junc.rho = _(rho.sampled(p.dx))
+      junc.efield = _(rho.int().sampled(p.dx))
+      junc.E = _(rho.int().sampled(p.dx))
     }
   }
 
