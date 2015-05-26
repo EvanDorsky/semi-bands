@@ -19,43 +19,62 @@ function integrate(f) {
 }
 
 // representation of a polynomial function
-// coefs = [a3, a2, a1, a0]
-// dcoefs= [3a3, 2a2, a1]
-function Poly(_) {
+// coefs = [a0, a1, a2, a3, ...]
+function Poly(_coefs) {
   var poly = {
-    coefs: _,
+    coefs: _coefs,
     diff: function() {
       var dcoefs = poly.coefs;
-      var n = dcoefs.length;
-      for (var i in dcoefs) {
-        dcoefs[i] *= n;
-        n--;
-      }
-      dcoefs.pop()
+      for (var i in dcoefs)
+        dcoefs[i] *= Number(i)+1;
+
+      dcoefs.shift()
       poly.coefs = dcoefs;
 
       return poly;
     },
     int: function() {
       var icoefs = poly.coefs;
-      var n = icoefs.length;
-      for (var i in icoefs) {
-        icoefs[i] /= n+1;
-        n--;
-      }
-      icoefs.push(0);
+      for (var i in icoefs)
+        icoefs[i] /= Number(i)+2;
+
+      icoefs.unshift(0);
       poly.coefs = icoefs;
 
       return poly;
+    },
+    sample: function(range, dx) {
+      var a = range[0];
+      var b = range[range.length-1];
+      if (arguments.length === 2) {
+        var X = _.range(a, b, dx);
+
+        var Y = X.map(function(x) {
+          return _(poly.coefs).map(function(coef, i) {
+            return coef*Math.pow(x, i+1);
+          }).memoize().reduce(function(x,y){
+            return x+y
+          });
+        });
+
+        return X.zip(Y.toArray()).map(function(x) {
+          return {
+            x: x[0],
+            y: x[1]
+          }
+        }).toArray()
+      }
     }
   };
 
   return poly;
 }
 
-var pol = Poly([3, 2, 1])
+var pol = Poly([1, 2, 3])
 console.log('pol==========');
-console.log(pol);
+console.log(pol.coefs);
+console.log('pol.sample([1, 2], .1)');
+console.log(pol.sample([0, 1], .1));
 
 // physical constants
 var e0 = 8.8542e-12; // F/m
