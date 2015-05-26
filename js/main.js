@@ -18,6 +18,45 @@ function integrate(f) {
     }, l).memoize();
 }
 
+// representation of a polynomial function
+// coefs = [a3, a2, a1, a0]
+// dcoefs= [3a3, 2a2, a1]
+function Poly(_) {
+  var poly = {
+    coefs: _,
+    diff: function() {
+      var dcoefs = poly.coefs;
+      var n = dcoefs.length;
+      for (var i in dcoefs) {
+        dcoefs[i] *= n;
+        n--;
+      }
+      dcoefs.pop()
+      poly.coefs = dcoefs;
+
+      return poly;
+    },
+    int: function() {
+      var icoefs = poly.coefs;
+      var n = icoefs.length;
+      for (var i in icoefs) {
+        icoefs[i] /= n+1;
+        n--;
+      }
+      icoefs.push(0);
+      poly.coefs = icoefs;
+
+      return poly;
+    }
+  };
+
+  return poly;
+}
+
+var pol = Poly([3, 2, 1])
+console.log('pol==========');
+console.log(pol);
+
 // physical constants
 var e0 = 8.8542e-12; // F/m
 var kS = 11.9;
