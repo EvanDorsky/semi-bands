@@ -65,16 +65,33 @@ function Poly(_coefs) {
         }).toArray()
       }
     }
-  };
+  }
 
   return poly;
 }
 
-var pol = Poly([1, 2, 3])
-console.log('pol==========');
-console.log(pol.coefs);
-console.log('pol.sample([1, 2], .1)');
-console.log(pol.sample([0, 1], .1));
+function PolyFunc(_polys) {
+  var func = {
+    polys: _polys,
+    int: function() {
+      return func.polys.map(function(spec) {
+        return spec.poly.int()
+      })
+    },
+    diff: function() {
+      return func.polys.map(function(spec) {
+        return spec.poly.diff()
+      })
+    },
+    sample: function(dx) {
+      return func.polys.map(function(spec) {
+        return spec.poly.sample(spec.range, dx)
+      }).reduce(function(x, y) { return x.concat(y) })
+    }
+  }
+
+  return func;
+}
 
 // physical constants
 var e0 = 8.8542e-12; // F/m
@@ -107,17 +124,31 @@ function pnJunction(props) {
       var dep = depletion(NA, ND, VA);
       junc.Vbi = dep.V0;
 
-      junc.rho = _.range(0, L/2, dep.xp/10).map(function(x){return -x}).reverse()
-        .concat(_.range(0, L/2, dep.xn/10))
-        .map(function charge(x) {
-          if (-dep.xp < x && x <= 0)
-            return { x: x, y: -q*NA };
+      junc.rho = PolyFunc([
+        {
+          poly: Poly([0]),
+          range: [-L/2, -dep.xp]
+        },
+        {
+          poly: Poly([-q*NA]),
+          range: [-dep.xp, 0]
+        },
+        {
+          poly: Poly([q*ND]),
+          range: [0, dep.xn]
+        },
+        {
+          poly: Poly([0]),
+          range: [dep.xn, L/2]
+        }
+      ]);
 
-          if (0 < x && x <= dep.xn)
-            return { x: x, y: q*ND };
-
-          return { x: x, y: 0 };
-        }).memoize();
+      console.log('junc.rho');
+      console.log(junc.rho);
+      console.log('junc.rho.int()');
+      console.log(junc.rho.int());
+      console.log('junc.rho.sample(.0001)');
+      console.log(junc.rho.sample(.0001));
 
       junc.efield = integrate(junc.rho)
         .map(function(n) {
