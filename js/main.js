@@ -277,22 +277,24 @@ function pnChart(junc) {
 }
 
 function semiChart() {
-  var margin = {top: 20, right: 20, bottom: 20, left: 20},
-    width = 760,
-    height = 120,
-    xScale = d3.scale.linear(),
-    yScale = d3.scale.linear(),
-    line = d3.svg.line().x(X).y(Y)
+  var p = {
+    margin: {top: 20, right: 20, bottom: 20, left: 20},
+    width: 760,
+    height: 120,
+    xScale: d3.scale.linear(),
+    yScale: d3.scale.linear(),
+    line: d3.svg.line().x(X).y(Y)
+  }
 
   function chart(selection) {
     selection.each(function(data) {
-      xScale
+      p.xScale
         .domain(d3.extent(data.pluck('x').toArray()))
-        .range([0, width - margin.left - margin.right])
+        .range([0, p.width - p.margin.left - p.margin.right])
 
-      yScale
+      p.yScale
         .domain(d3.extent(data.pluck('y').toArray()))
-        .range([height - margin.top - margin.bottom, 0])
+        .range([p.height - p.margin.top - p.margin.bottom, 0])
 
       // Select the svg element, if it exists.
       var svg = d3.select(this).selectAll('svg').data([data.toArray()])
@@ -307,11 +309,11 @@ function semiChart() {
       .attr('cy', function(d) {return Y(d)})
       .attr('r', 2)
 
-      svg.attr('width', width)
-         .attr('height', height)
+      svg.attr('width', p.width)
+         .attr('height', p.height)
 
       var g = svg.select('g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+        .attr('transform', 'translate(' + p.margin.left + ',' + p.margin.top + ')')
     })
   }
 
@@ -339,54 +341,21 @@ function semiChart() {
   }
 
   function X(d) {
-    return xScale(d.x)
+    return p.xScale(d.x)
   }
 
   function Y(d) {
-    return yScale(d.y)
+    return p.yScale(d.y)
   }
 
-  chart.margin = function(_) {
-    if (!arguments.length) return margin
-    margin = _
-    return chart
-  }
-
-  chart.line = function(_) {
-    if (!arguments.length) return line
-    line = _
-    return chart
-  }
-
-  chart.width = function(_) {
-    if (!arguments.length) return width
-    width = _
-    return chart
-  }
-
-  chart.yScale = function(_) {
-    if (!arguments.length) return yScale
-    yScale = _
-    return chart
-  }
-
-  chart.xScale = function(_) {
-    if (!arguments.length) return xScale
-    xScale = _
-    return chart
-  }
-
-  chart.margin = function(_) {
-    if (!arguments.length) return margin
-    margin = _
-    return chart
-  }
-
-  chart.height = function(_) {
-    if (!arguments.length) return height
-    height = _
-    return chart
-  }
+  // generate getters/setters
+  Object.keys(p).forEach(function(key) {
+    chart[key] = function(_) {
+      if (!arguments.length) return p[key]
+      p[key] = _
+      return chart
+    }
+  })
 
   return chart
 } // after http://bost.ocks.org/mike/chart/
