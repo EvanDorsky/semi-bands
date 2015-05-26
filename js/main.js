@@ -251,7 +251,7 @@ function pnChart(junc) {
     }
   }
 
-  chart.rhoC.line().interpolate('step')
+  chart.rhoC.line().interpolate('step-after')
   d3.select('body')
     .append('div')
     .attr('id', 'rho')
