@@ -51,7 +51,7 @@ function Poly(_coefs) {
 
         var Y = X.map(function(x) {
           return _(poly.coefs).map(function(coef, i) {
-            return coef*Math.pow(x, i+1);
+            return coef*Math.pow(x, i);
           }).memoize().reduce(function(x,y){
             return x+y
           });
@@ -62,19 +62,13 @@ function Poly(_coefs) {
             x: x[0],
             y: x[1]
           }
-        }).toArray()
+        })
       }
     }
   };
 
   return poly;
 }
-
-var pol = Poly([1, 2, 3])
-console.log('pol==========');
-console.log(pol.coefs);
-console.log('pol.sample([1, 2], .1)');
-console.log(pol.sample([0, 1], .1));
 
 // physical constants
 var e0 = 8.8542e-12; // F/m
@@ -184,6 +178,8 @@ window.onload = function() {
     })
 }
 
+window.ohgodno = Poly([0, 1, 0, -1/6, 0, 1/120, 0, -1/5040, 0, 1/362880, 0, -1/39916800]).sample([0, 6], .05);
+
 function pnChart(junc) {
   if (!arguments.length)
     console.error('Requires a pn junction!');
@@ -198,7 +194,7 @@ function pnChart(junc) {
       });
 
       d3.select('#rho')
-      .datum(chart.junc.rho)
+      .datum(ohgodno)
       .call(chart.rhoC.update)
       
       d3.select('#efield')
@@ -215,7 +211,7 @@ function pnChart(junc) {
   d3.select('body')
     .append('div')
     .attr('id', 'rho')
-    .datum(chart.junc.rho)
+    .datum(ohgodno)
     .call(chart.rhoC)
     .call(chart.rhoC.update);
 
