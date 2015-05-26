@@ -69,6 +69,8 @@ function PolyFunc(_polys) {
       }]
       for (var i = 1; i < func.polys.length; i++) {
         var r = func.polys[i].range
+        console.log('LASTS!')
+        console.log(temp[i-1].poly.sampledAt(r[0]))
         temp.push({
           poly: func.polys[i].poly.int(temp[i-1].poly.sampledAt(r[0])),
           range: r
@@ -153,8 +155,8 @@ function pnJunction(props) {
       ])
 
       junc.rho = _(rho.sampled(p.dx))
-      junc.efield = _(rho.int().sampled(p.dx))
-      junc.E = _(rho.int().sampled(p.dx))
+      junc.efield = _(rho.int(0).sampled(p.dx))
+      junc.E = _(rho.int(0).sampled(p.dx))
     }
   }
 
