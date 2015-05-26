@@ -310,13 +310,7 @@ function semiChart() {
 
       // Otherwise, create the skeletal chart.
       var gEnter = svg.enter().append('svg').append('g')
-      // gEnter.append('path').attr('class', 'line')
-      svg.select('g').selectAll('circle')
-      .data(data.toArray())
-      .enter().append('circle')
-      .attr('cx', function(d) {return X(d)})
-      .attr('cy', function(d) {return Y(d)})
-      .attr('r', 2)
+      gEnter.append('path').attr('class', 'line')
 
       svg.attr('width', p.width)
          .attr('height', p.height)
@@ -328,22 +322,9 @@ function semiChart() {
 
   chart.update = function(selection) {
     selection.each(function(data) {
-
-      // var svg = d3.select(this).selectAll('svg').data([data.toArray()])
-      var svg = d3.select(this).selectAll('svg')
-      // svg.select('g').select('.line')
-      //   .attr('d', line)
-      // })
-      var upd = svg.select('g').selectAll('circle')
-      .data(data.toArray())
-
-      upd.enter().append('circle')
-
-      upd.attr('cx', function(d) {return X(d)})
-      .attr('cy', function(d) {return Y(d)})
-      .attr('r', 2)
-
-      upd.exit().remove()
+      var svg = d3.select(this).selectAll('svg').data([data.toArray()])
+      svg.select('g').select('.line')
+        .attr('d', p.line)
 
       return chart
     })
