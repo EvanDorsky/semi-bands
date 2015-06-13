@@ -56,13 +56,6 @@ function Poly(_coefs) {
 
       return poly
     },
-    div: function(a) {
-      poly.coefs = poly.coefs.map(function(coef) {
-        return coef/a
-      })
-
-      return poly
-    },
     sampledAt: function(x) {
       return _(poly.coefs).map(function(coef, i) {
         return coef*Math.pow(x, i)
@@ -121,19 +114,6 @@ function PolyFunc(_polys) {
       })
       
       return func
-    },
-    div: function(a) {
-      func.polys = func.polys.map(function(spec) {
-        return {
-          poly: spec.poly.div(a),
-          range: spec.range
-        }
-      })
-      
-      return func
-    },
-    copy: function() {
-      return new PolyFunc(func.polys)
     },
     sampled: function(dx) {
       return func.polys.map(function(spec) {
@@ -197,7 +177,7 @@ function pnJunction(props) {
 
       junc.rho = _(rho.sampled(p.dx))
       junc.efield = _(rho.int(0).mult(q/(kS*e0)).sampled(p.dx))
-      junc.E = _(rho.int(0).div(-q).sampled(p.dx))
+      junc.E = _(rho.int(0).mult(-1/q).sampled(p.dx))
     }
   }
 
@@ -239,23 +219,15 @@ window.onload = function() {
 
   var PNC = pnChart(junction)
 
-  d3.select('button.NA')
-    .on('click', function() {
-      var NAnew = Number(d3.select('input.NA')
-        .property('value'))
-      PNC.update({
-        NA: NAnew
+  _(['NA', 'ND']).each(function (param) {
+    d3.select('button.'+param)
+      .on('click', function() {
+        var upd = {}
+        upd[param] = Number(d3.select('input.'+param).property('value'))
+        PNC.update(upd)
       })
-    })
+  })
 
-  d3.select('button.ND')
-    .on('click', function() {
-      var NDnew = Number(d3.select('input.ND')
-        .property('value'))
-      PNC.update({
-        ND: NDnew
-      })
-    })
 }
 
 function pnChart(junc) {
@@ -266,46 +238,32 @@ function pnChart(junc) {
     rhoC: semiChart(),
     efieldC: semiChart(),
     EC: semiChart(),
+    names: ['rho', 'efield', 'E'],
     update: function updatepnChart(opts) {
       Object.keys(opts).forEach(function(key) {
         chart.junc[key](opts[key])
       })
 
-      d3.select('#rho')
-      .datum(chart.junc.rho)
-      .call(chart.rhoC.update)
-      
-      d3.select('#efield')
-      .datum(chart.junc.efield)
-      .call(chart.efieldC.update)
-      
-      d3.select('#E')
-      .datum(chart.junc.E)
-      .call(chart.EC.update)
+      chart.names.forEach(function(name) {
+        d3.select('#'+name)
+        .datum(chart.junc[name])
+        .call(chart[name+'C'].update)
+      })
     }
   }
 
   chart.rhoC.line().interpolate('step-after')
-  d3.select('body')
-    .append('div')
-    .attr('id', 'rho')
-    .datum(chart.junc.rho)
-    .call(chart.rhoC)
-    .call(chart.rhoC.update)
 
-  d3.select('body')
-    .append('div')
-    .attr('id', 'efield')
-    .datum(chart.junc.efield)
-    .call(chart.efieldC)
-    .call(chart.efieldC.update)
+  chart.names.forEach(function(name) {
+    d3.select('body')
+      .append('div')
+      .attr('id', name)
+      .datum(chart.junc[name])
+      .call(chart[name+'C'])
+      .call(chart[name+'C'].update)
+  })
 
-  d3.select('body')
-    .append('div')
-    .attr('id', 'E')
-    .datum(chart.junc.E)
-    .call(chart.EC)
-    .call(chart.EC.update)
+  d3.select('#E')
     .on('mousemove', function() {
       var V = chart.EC.yScale().invert(d3.mouse(this)[1]-chart.EC.margin().bottom)
       if (V<.05)
@@ -339,17 +297,15 @@ function semiChart() {
         .domain(d3.extent(data.pluck('y').toArray()))
         .range([p.height - p.margin.top - p.margin.bottom, 0])
 
-      // Select the svg element, if it exists.
       var svg = d3.select(this).selectAll('svg').data([data.toArray()])
 
-      // Otherwise, create the skeletal chart.
-      var gEnter = svg.enter().append('svg').append('g')
-      gEnter.append('path').attr('class', 'line')
+      svg.enter().append('svg').append('g')
+        .append('path').attr('class', 'line')
 
       svg.attr('width', p.width)
-         .attr('height', p.height)
+        .attr('height', p.height)
 
-      var g = svg.select('g')
+      svg.select('g')
         .attr('transform', 'translate(' + p.margin.left + ',' + p.margin.top + ')')
     })
   }
