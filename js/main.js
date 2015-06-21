@@ -177,7 +177,7 @@ function pnJunction(props) {
 
       junc.rho = _(rho.sampled(p.dx))
       junc.efield = _(rho.int(0).mult(q/(kS*e0)).sampled(p.dx))
-      junc.E = _(rho.int(0).mult(-1/q).sampled(p.dx))
+      junc.V = _(rho.int(0).mult(-1/q).sampled(p.dx))
     }
   }
 
@@ -235,37 +235,51 @@ function pnChart(junc) {
     console.error('Requires a pn junction!')
   var chart = {
     junc: junc,
-    rhoC: semiChart(),
-    efieldC: semiChart(),
-    EC: semiChart(),
-    names: ['rho', 'efield', 'E'],
+    subs: {
+      rho: {
+        title: 'Charge Density',
+        plot: semiChart()
+      },
+      efield: {
+        title: 'Electric Field',
+        plot: semiChart()
+      },
+      V: {
+        title: 'Voltage',
+        plot: semiChart()
+      }
+    },
     update: function updatepnChart(opts) {
       Object.keys(opts).forEach(function(key) {
         chart.junc[key](opts[key])
       })
 
-      chart.names.forEach(function(name) {
+      for (var name in chart.subs) {
+        var sub = chart.subs[name]
+
         d3.select('#'+name)
-        .datum(chart.junc[name])
-        .call(chart[name+'C'].update)
-      })
+          .datum(chart.junc[name])
+          .call(sub.plot.update)
+      }
     }
   }
 
-  chart.rhoC.line().interpolate('step-after')
+  chart.subs.rho.plot.line().interpolate('step-after')
 
-  chart.names.forEach(function(name) {
+  for (var name in chart.subs) {
+    var sub = chart.subs[name]
+
     d3.select('body')
       .append('div')
       .attr('id', name)
       .datum(chart.junc[name])
-      .call(chart[name+'C'])
-      .call(chart[name+'C'].update)
-  })
+      .call(sub.plot)
+      .call(sub.plot.update)
+  }
 
-  d3.select('#E')
+  d3.select('#V')
     .on('mousemove', function() {
-      var V = chart.EC.yScale().invert(d3.mouse(this)[1]-chart.EC.margin().bottom)
+      var V = chart.subs.V.plot.yScale().invert(d3.mouse(this)[1]-chart.subs.V.plot.margin().bottom)
       if (V<.05)
         return
 
