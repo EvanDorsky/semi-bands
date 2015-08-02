@@ -275,6 +275,15 @@ function pnChart(junc) {
       .datum(chart.junc[name])
       .call(sub.plot)
       .call(sub.plot.update)
+
+    d3.selectAll('#'+name)
+      .select('svg')
+      .append('text')
+      .text(sub.title)
+      .attr('x', 760/2)
+      .attr('y', 20)
+      .attr('text-anchor', 'middle')
+      .attr('font-family', 'sans-serif')
   }
 
   d3.select('#V')
@@ -283,10 +292,18 @@ function pnChart(junc) {
       if (V<.05)
         return
 
+      var VA = chart.junc.Vbi-V;
+
+      d3.select('#bias')
+        .text(VA.toPrecision(3)+' V')
+
       chart.update({
-        VA: chart.junc.Vbi-V
+        VA: VA
       })
     })
+    .selectAll('svg')
+    .append('text')
+    .attr('id', 'bias')
 
   return chart
 }
@@ -295,7 +312,7 @@ function semiChart() {
   var p = {
     margin: {top: 20, right: 20, bottom: 20, left: 20},
     width: 760,
-    height: 120,
+    height: 140,
     xScale: d3.scale.linear(),
     yScale: d3.scale.linear(),
     line: d3.svg.line().x(X).y(Y)
