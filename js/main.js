@@ -297,6 +297,7 @@ function pnChart(junc) {
     console.error('Requires a pn junction!')
   var chart = {
     junc: junc,
+    block: semiBlockChart(),
     subs: {
       rho: {
         title: 'Charge Density',
@@ -316,6 +317,10 @@ function pnChart(junc) {
         chart.junc[key](opts[key])
       })
 
+      d3.select('#blockChart')
+        .datum(chart.junc.Q)
+        .call(chart.block.update)
+
       for (var name in chart.subs) {
         var sub = chart.subs[name]
 
@@ -327,14 +332,12 @@ function pnChart(junc) {
     }
   }
 
-  var block = semiBlockChart()
-
   d3.select('body')
     .append('div')
     .attr('id', 'blockChart')
     .datum(chart.junc.Q)
-    .call(block)
-    .call(block.update)
+    .call(chart.block)
+    .call(chart.block.update)
 
   chart.subs.rho.plot.line().interpolate('step-after')
 
@@ -369,13 +372,9 @@ function pnChart(junc) {
       d3.select('#bias')
         .text(VA.toPrecision(3)+' V')
 
-      var newJunc = chart.update({
+      chart.update({
         VA: VA
       })
-
-      d3.select('#blockChart')
-        .datum(newJunc.Q)
-        .call(block.update)
     })
     .selectAll('svg')
     .append('text')
