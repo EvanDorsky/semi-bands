@@ -175,6 +175,7 @@ function pnJunction(props) {
         }
       ])
 
+      junc.Q = rho
       junc.rho = _(rho.sampled(p.dx))
       junc.efield = _(rho.int(0).mult(q/(kS*e0)).sampled(p.dx))
       junc.V = _(rho.int(0).mult(-1/q).sampled(p.dx))
@@ -209,6 +210,68 @@ function pnJunction(props) {
   return junc
 }
 
+function semiBlockChart() {
+  var p = {
+    margin: {top: 20, right: 20, bottom: 20, left: 20},
+    width: 760,
+    height: 140,
+    xScale: d3.scale.linear(),
+    yScale: d3.scale.linear()
+  }
+
+  function chart(selection) {
+    selection.each(function(data) {
+      var rects = _(data.polys).pluck('range').toArray()
+
+      var xDomain = d3.extent(_(rects).reduce(function(x, y)
+        {
+          return x.concat(y)
+        })
+      )
+
+      var blockWidth = xDomain[1] - xDomain[0]
+      var plotWidth = p.width - p.margin.left - p.margin.right
+
+      p.xScale
+        .domain(xDomain)
+        .range([0, plotWidth])
+
+      p.yScale
+        .domain(xDomain.map(function(x) {return x/2}))
+        .range([p.height - p.margin.top - p.margin.bottom, 0])
+
+      var svg = d3.select(this).append('svg')
+
+      svg.append('g').selectAll('rect')
+        .data(rects).enter()
+        .append('rect')
+        .attr('width', function(d) {
+          return (d[1] - d[0])/blockWidth*plotWidth
+        })
+        .attr('height', Math.abs(p.yScale(blockWidth/2)))
+        .attr('x', function(d) {
+          return p.xScale(d[0])
+        })
+        .attr('fill', 'red')
+
+      svg.attr('width', p.width)
+        .attr('height', p.height)
+
+      svg.select('g')
+        .attr('transform', 'translate(' + p.margin.left + ',' + p.margin.top + ')')
+    })
+  }
+
+  chart.update = function(selection) {
+    selection.each(function(data) {
+
+    })
+    return chart
+  }
+
+  return chart
+}
+
 window.onload = function() {
   var junction = new pnJunction({
     NA: 1e14,
@@ -227,7 +290,6 @@ window.onload = function() {
         PNC.update(upd)
       })
   })
-
 }
 
 function pnChart(junc) {
@@ -263,6 +325,15 @@ function pnChart(junc) {
       }
     }
   }
+
+  var block = semiBlockChart()
+
+  d3.select('body')
+    .append('div')
+    .attr('id', 'blockChart')
+    .datum(chart.junc.Q)
+    .call(block)
+    .call(block.update)
 
   chart.subs.rho.plot.line().interpolate('step-after')
 
@@ -328,9 +399,9 @@ function semiChart() {
         .domain(d3.extent(data.pluck('y').toArray()))
         .range([p.height - p.margin.top - p.margin.bottom, 0])
 
-      var svg = d3.select(this).selectAll('svg').data([data.toArray()])
+      var svg = d3.select(this).append('svg')
 
-      svg.enter().append('svg').append('g')
+      svg.append('g').data([data.toArray()])
         .append('path').attr('class', 'line')
 
       svg.attr('width', p.width)
@@ -346,9 +417,8 @@ function semiChart() {
       var svg = d3.select(this).selectAll('svg').data([data.toArray()])
       svg.select('g').select('.line')
         .attr('d', p.line)
-
-      return chart
     })
+    return chart
   }
 
   function X(d) {
