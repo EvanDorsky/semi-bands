@@ -229,42 +229,42 @@ function semiBlockChart() {
         })
       )
 
-      var blockWidth = xDomain[1] - xDomain[0]
-      var plotWidth = p.width - p.margin.left - p.margin.right
+      p.blockWidth = xDomain[1] - xDomain[0]
+      p.plotWidth = p.width - p.margin.left - p.margin.right
 
       p.xScale
         .domain(xDomain)
-        .range([0, plotWidth])
+        .range([0, p.plotWidth])
 
       p.yScale
         .domain(xDomain.map(function(x) {return x/2}))
         .range([p.height - p.margin.top - p.margin.bottom, 0])
 
       var svg = d3.select(this).append('svg')
-
-      svg.append('g').selectAll('rect')
-        .data(rects).enter()
-        .append('rect')
-        .attr('width', function(d) {
-          return (d[1] - d[0])/blockWidth*plotWidth
-        })
-        .attr('height', Math.abs(p.yScale(blockWidth/2)))
-        .attr('x', function(d) {
-          return p.xScale(d[0])
-        })
-        .attr('fill', 'red')
-
-      svg.attr('width', p.width)
+        .attr('width', p.width)
         .attr('height', p.height)
 
-      svg.select('g')
+      svg.append('g')
         .attr('transform', 'translate(' + p.margin.left + ',' + p.margin.top + ')')
+
+      svg.select('g').selectAll('rect')
+        .data(rects).enter().append('rect')
     })
   }
 
   chart.update = function(selection) {
     selection.each(function(data) {
+      var rects = _(data.polys).pluck('range').toArray()
 
+      d3.select(this).selectAll('rect')
+        .data(rects)
+        .attr('width', function(d) {
+          return (d[1] - d[0])/p.blockWidth * p.plotWidth
+        })
+        .attr('height', Math.abs(p.yScale(p.blockWidth/2)))
+        .attr('x', function(d) {
+          return p.xScale(d[0])
+        })
     })
     return chart
   }
@@ -323,6 +323,7 @@ function pnChart(junc) {
           .datum(chart.junc[name])
           .call(sub.plot.update)
       }
+      return chart.junc
     }
   }
 
@@ -368,9 +369,13 @@ function pnChart(junc) {
       d3.select('#bias')
         .text(VA.toPrecision(3)+' V')
 
-      chart.update({
+      var newJunc = chart.update({
         VA: VA
       })
+
+      d3.select('#blockChart')
+        .datum(newJunc.Q)
+        .call(block.update)
     })
     .selectAll('svg')
     .append('text')
