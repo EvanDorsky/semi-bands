@@ -265,6 +265,10 @@ function pnChart(junc) {
         .datum(chart.junc.block)
         .call(chart.block.update)
 
+      d3.select('#overlay')
+        .datum(chart.junc.block)
+        .call(chart.overlay.update)
+
       for (var name in chart.subs) {
         var sub = chart.subs[name]
 
@@ -276,7 +280,7 @@ function pnChart(junc) {
     }
   }
 
-  d3.select('body')
+  d3.select('#container')
     .append('div')
     .attr('id', 'block')
     .datum(chart.junc.block)
@@ -288,7 +292,7 @@ function pnChart(junc) {
   for (var name in chart.subs) {
     var sub = chart.subs[name]
 
-    d3.select('body')
+    d3.select('#container')
       .append('div')
       .attr('id', name)
       .datum(chart.junc[name])
@@ -303,7 +307,7 @@ function pnChart(junc) {
       .attr('font-family', 'sans-serif')
   }
 
-  d3.select('body')
+  d3.select('#container')
     .append('div')
     .attr('id', 'overlay')
     .datum(chart.junc.block)
@@ -454,10 +458,10 @@ function semiBlockChart() {
 
 function overlayChart() {
   var p = {
+    margin: {top: 20, right: 20, bottom: 20, left: 20},
     width: 760,
-    height: 140*4,
-    xScale: d3.scale.linear(),
-    yScale: d3.scale.linear()
+    height: 140*4+20,
+    xScale: d3.scale.linear()
   }
 
   function chart(selection) {
@@ -468,20 +472,25 @@ function overlayChart() {
         { return x.concat(y) }))
 
       p.blockWidth = xDomain[1] - xDomain[0]
+      p.plotWidth = p.width - p.margin.left - p.margin.right
+      p.plotHeight = p.height - p.margin.top - p.margin.bottom
 
       var lines = _(rects).rest().map(function(x) {
-        return [{ x: x[0], y: 0 }, { x: x[0], y: p.height }]
+        return [{ x: x[0], y: 0 }, { x: x[0], y: p.plotHeight }]
       }).toArray()
 
       p.xScale
         .domain(xDomain)
-        .range([0, p.width])
+        .range([0, p.plotWidth])
 
       var svg = d3.select(this).append('svg')
         .attr('width', p.width)
         .attr('height', p.height)
 
-      svg.append('g').selectAll('path')
+      svg.append('g')
+        .attr('transform', 'translate(' + p.margin.left + ',' + p.margin.top + ')')
+
+      svg.select('g').selectAll('path')
         .data(lines).enter()
         .append('path').attr('class', 'line')
     })
@@ -490,11 +499,10 @@ function overlayChart() {
   chart.update = function(selection) {
     selection.each(function(data) {
       var lines = _(data).pluck('range').map(function(x) {
-        return [{ x: x[0], y: 0 }, { x: x[0], y: 100 }]
+        return [{ x: x[0], y: 0 }, { x: x[0], y: p.plotHeight }]
       }).rest().toArray()
 
-      d3.select(this).select('svg').data(lines)
-        .selectAll('.line')
+      d3.select(this).selectAll('path').data(lines)
         .attr('d', d3.svg.line()
           .x(function(d) {
             return p.xScale(d.x)
@@ -502,16 +510,6 @@ function overlayChart() {
           .y(function(d) {
             return d.y
           }).interpolate('linear'))
-
-      d3.select(this).selectAll('rect')
-        .data(lines)
-        .attr('width', function(d) {
-          return 2
-        })
-        .attr('height', p.plotHeight)
-        .attr('x', function(d) {
-          return p.xScale(d.x)
-        })
     })
     return chart
   }

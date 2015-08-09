@@ -3,6 +3,9 @@ ntype = complement(ptype)
 pdep =  #09f
 ndep =  complement(pdep)
 
+#container
+  position relative
+  
 .line
   fill none
   stroke black
@@ -27,4 +30,9 @@ ndep =  complement(pdep)
 #overlay
   position absolute
   top 0
-  z-index -1000
+  z-index -1
+
+  .line
+    stroke-width 2
+    stroke-dasharray 10,5,5,5
+    stroke #0008
