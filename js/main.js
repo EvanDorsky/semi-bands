@@ -241,6 +241,7 @@ function pnChart(junc) {
   var chart = {
     junc: junc,
     block: semiBlockChart(),
+    overlay: overlayChart(),
     subs: {
       rho: {
         title: 'Charge Density',
@@ -302,6 +303,13 @@ function pnChart(junc) {
       .attr('font-family', 'sans-serif')
   }
 
+  d3.select('body')
+    .append('div')
+    .attr('id', 'overlay')
+    .datum(chart.junc.block)
+    .call(chart.overlay)
+    .call(chart.overlay.update)
+
   d3.select('#V')
     .on('mousemove', function() {
       var V = chart.subs.V.plot.yScale().invert(d3.mouse(this)[1]-chart.subs.V.plot.margin().bottom)
@@ -345,12 +353,11 @@ function semiChart() {
         .range([p.height - p.margin.top - p.margin.bottom, 0])
 
       var svg = d3.select(this).append('svg')
+        .attr('width', p.width)
+        .attr('height', p.height)
 
       svg.append('g').data([data.toArray()])
         .append('path').attr('class', 'line')
-
-      svg.attr('width', p.width)
-        .attr('height', p.height)
 
       svg.select('g')
         .attr('transform', 'translate(' + p.margin.left + ',' + p.margin.top + ')')
@@ -359,8 +366,8 @@ function semiChart() {
 
   chart.update = function(selection) {
     selection.each(function(data) {
-      var svg = d3.select(this).selectAll('svg').data([data.toArray()])
-      svg.select('g').select('.line')
+      var svg = d3.select(this).select('svg').data([data.toArray()])
+      svg.select('.line')
         .attr('d', p.line)
     })
     return chart
@@ -386,7 +393,6 @@ function semiChart() {
   return chart
 } // after http://bost.ocks.org/mike/chart/
 
-
 function semiBlockChart() {
   var p = {
     margin: {top: 20, right: 20, bottom: 20, left: 20},
@@ -401,10 +407,7 @@ function semiBlockChart() {
       var rects = _(data).pluck('range').toArray()
 
       var xDomain = d3.extent(_(rects).reduce(function(x, y)
-        {
-          return x.concat(y)
-        })
-      )
+        { return x.concat(y) }))
 
       p.blockWidth = xDomain[1] - xDomain[0]
       p.plotWidth = p.width - p.margin.left - p.margin.right
@@ -441,6 +444,73 @@ function semiBlockChart() {
         .attr('height', p.plotHeight)
         .attr('x', function(d) {
           return p.xScale(d[0])
+        })
+    })
+    return chart
+  }
+
+  return chart
+}
+
+function overlayChart() {
+  var p = {
+    width: 760,
+    height: 140*4,
+    xScale: d3.scale.linear(),
+    yScale: d3.scale.linear()
+  }
+
+  function chart(selection) {
+    selection.each(function(data) {
+      var rects = _(data).pluck('range').toArray()
+
+      var xDomain = d3.extent(_(rects).reduce(function(x, y)
+        { return x.concat(y) }))
+
+      p.blockWidth = xDomain[1] - xDomain[0]
+
+      var lines = _(rects).rest().map(function(x) {
+        return [{ x: x[0], y: 0 }, { x: x[0], y: p.height }]
+      }).toArray()
+
+      p.xScale
+        .domain(xDomain)
+        .range([0, p.width])
+
+      var svg = d3.select(this).append('svg')
+        .attr('width', p.width)
+        .attr('height', p.height)
+
+      svg.append('g').selectAll('path')
+        .data(lines).enter()
+        .append('path').attr('class', 'line')
+    })
+  }
+
+  chart.update = function(selection) {
+    selection.each(function(data) {
+      var lines = _(data).pluck('range').map(function(x) {
+        return [{ x: x[0], y: 0 }, { x: x[0], y: 100 }]
+      }).rest().toArray()
+
+      d3.select(this).select('svg').data(lines)
+        .selectAll('.line')
+        .attr('d', d3.svg.line()
+          .x(function(d) {
+            return p.xScale(d.x)
+          })
+          .y(function(d) {
+            return d.y
+          }).interpolate('linear'))
+
+      d3.select(this).selectAll('rect')
+        .data(lines)
+        .attr('width', function(d) {
+          return 2
+        })
+        .attr('height', p.plotHeight)
+        .attr('x', function(d) {
+          return p.xScale(d.x)
         })
     })
     return chart

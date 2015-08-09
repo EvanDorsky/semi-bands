@@ -22,3 +22,8 @@
 #block .n {
   fill: #fb9;
 }
+#overlay {
+  position: absolute;
+  top: 0;
+  z-index: -1000;
+}
