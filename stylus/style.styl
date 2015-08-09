@@ -1,7 +1,25 @@
+ptype = #9df
+ntype = complement(ptype)
+pdep =  #09f
+ndep =  complement(pdep)
+
 .line
   fill none
   stroke black
   stroke-width 4
   
 #rho .line
-  fill #4bf8
+  fill ptype
+
+#block
+  rect
+    stroke black
+    stroke-width 2
+  .p
+    fill ptype
+  .pdep
+    fill pdep
+  .ndep
+    fill ndep
+  .n
+    fill ntype

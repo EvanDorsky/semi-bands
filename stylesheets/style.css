@@ -4,5 +4,21 @@
   stroke-width: 4;
 }
 #rho .line {
-  fill: rgba(68,187,255,0.533);
+  fill: #9df;
+}
+#block rect {
+  stroke: #000;
+  stroke-width: 2;
+}
+#block .p {
+  fill: #9df;
+}
+#block .pdep {
+  fill: #09f;
+}
+#block .ndep {
+  fill: #f60;
+}
+#block .n {
+  fill: #fb9;
 }

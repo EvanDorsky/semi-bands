@@ -156,26 +156,31 @@ function pnJunction(props) {
       var dep = depletion(NA, ND, VA)
       junc.Vbi = dep.V0
 
-      var rho = new PolyFunc([
+      var block = [
         {
           poly: Poly([0]),
-          range: [-L/2, -dep.xp]
+          range: [-L/2, -dep.xp],
+          type: 'p'
         },
         {
           poly: Poly([-q*NA]),
-          range: [-dep.xp, 0]
+          range: [-dep.xp, 0],
+          type: 'pdep'
         },
         {
           poly: Poly([q*ND]),
-          range: [0, dep.xn]
+          range: [0, dep.xn],
+          type: 'ndep'
         },
         {
           poly: Poly([0]),
-          range: [dep.xn, L/2]
+          range: [dep.xn, L/2],
+          type: 'n'
         }
-      ])
+      ]
+      var rho = new PolyFunc(block)
 
-      junc.Q = rho
+      junc.block = block
       junc.rho = _(rho.sampled(p.dx))
       junc.efield = _(rho.int(0).mult(q/(kS*e0)).sampled(p.dx))
       junc.V = _(rho.int(0).mult(-1/q).sampled(p.dx))
@@ -208,68 +213,6 @@ function pnJunction(props) {
 
   junc.update()
   return junc
-}
-
-function semiBlockChart() {
-  var p = {
-    margin: {top: 20, right: 20, bottom: 20, left: 20},
-    width: 760,
-    height: 140,
-    xScale: d3.scale.linear(),
-    yScale: d3.scale.linear()
-  }
-
-  function chart(selection) {
-    selection.each(function(data) {
-      var rects = _(data.polys).pluck('range').toArray()
-
-      var xDomain = d3.extent(_(rects).reduce(function(x, y)
-        {
-          return x.concat(y)
-        })
-      )
-
-      p.blockWidth = xDomain[1] - xDomain[0]
-      p.plotWidth = p.width - p.margin.left - p.margin.right
-
-      p.xScale
-        .domain(xDomain)
-        .range([0, p.plotWidth])
-
-      p.yScale
-        .domain(xDomain.map(function(x) {return x/2}))
-        .range([p.height - p.margin.top - p.margin.bottom, 0])
-
-      var svg = d3.select(this).append('svg')
-        .attr('width', p.width)
-        .attr('height', p.height)
-
-      svg.append('g')
-        .attr('transform', 'translate(' + p.margin.left + ',' + p.margin.top + ')')
-
-      svg.select('g').selectAll('rect')
-        .data(rects).enter().append('rect')
-    })
-  }
-
-  chart.update = function(selection) {
-    selection.each(function(data) {
-      var rects = _(data.polys).pluck('range').toArray()
-
-      d3.select(this).selectAll('rect')
-        .data(rects)
-        .attr('width', function(d) {
-          return (d[1] - d[0])/p.blockWidth * p.plotWidth
-        })
-        .attr('height', Math.abs(p.yScale(p.blockWidth/2)))
-        .attr('x', function(d) {
-          return p.xScale(d[0])
-        })
-    })
-    return chart
-  }
-
-  return chart
 }
 
 window.onload = function() {
@@ -317,8 +260,8 @@ function pnChart(junc) {
         chart.junc[key](opts[key])
       })
 
-      d3.select('#blockChart')
-        .datum(chart.junc.Q)
+      d3.select('#block')
+        .datum(chart.junc.block)
         .call(chart.block.update)
 
       for (var name in chart.subs) {
@@ -334,8 +277,8 @@ function pnChart(junc) {
 
   d3.select('body')
     .append('div')
-    .attr('id', 'blockChart')
-    .datum(chart.junc.Q)
+    .attr('id', 'block')
+    .datum(chart.junc.block)
     .call(chart.block)
     .call(chart.block.update)
 
@@ -350,13 +293,11 @@ function pnChart(junc) {
       .datum(chart.junc[name])
       .call(sub.plot)
       .call(sub.plot.update)
-
-    d3.selectAll('#'+name)
       .select('svg')
       .append('text')
       .text(sub.title)
       .attr('x', 760/2)
-      .attr('y', 20)
+      .attr('y', 12)
       .attr('text-anchor', 'middle')
       .attr('font-family', 'sans-serif')
   }
@@ -444,3 +385,66 @@ function semiChart() {
 
   return chart
 } // after http://bost.ocks.org/mike/chart/
+
+
+function semiBlockChart() {
+  var p = {
+    margin: {top: 20, right: 20, bottom: 20, left: 20},
+    width: 760,
+    height: 140,
+    xScale: d3.scale.linear(),
+    yScale: d3.scale.linear()
+  }
+
+  function chart(selection) {
+    selection.each(function(data) {
+      var rects = _(data).pluck('range').toArray()
+
+      var xDomain = d3.extent(_(rects).reduce(function(x, y)
+        {
+          return x.concat(y)
+        })
+      )
+
+      p.blockWidth = xDomain[1] - xDomain[0]
+      p.plotWidth = p.width - p.margin.left - p.margin.right
+      p.plotHeight = p.height - p.margin.top - p.margin.bottom
+
+      p.xScale
+        .domain(xDomain)
+        .range([0, p.plotWidth])
+
+      var svg = d3.select(this).append('svg')
+        .attr('width', p.width)
+        .attr('height', p.height)
+
+      svg.append('g')
+        .attr('transform', 'translate(' + p.margin.left + ',' + p.margin.top + ')')
+
+      svg.select('g').selectAll('rect')
+        .data(rects).enter().append('rect')
+        .attr('class', function(d, i) {
+          return data[i].type
+        })
+    })
+  }
+
+  chart.update = function(selection) {
+    selection.each(function(data) {
+      var rects = _(data).pluck('range').toArray()
+
+      d3.select(this).selectAll('rect')
+        .data(rects)
+        .attr('width', function(d) {
+          return (d[1] - d[0])/p.blockWidth * p.plotWidth
+        })
+        .attr('height', p.plotHeight)
+        .attr('x', function(d) {
+          return p.xScale(d[0])
+        })
+    })
+    return chart
+  }
+
+  return chart
+}
