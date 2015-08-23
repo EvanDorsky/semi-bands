@@ -126,7 +126,7 @@ function PolyFunc(_polys) {
 }
 
 // physical constants
-var e0 = 8.8542e-12 // F/m
+var e0 = 8.8542e-14 // F/cm
 var kS = 11.9
 var q = 1.602e-19 // J
 var T = 300 // K
@@ -136,9 +136,18 @@ var ni = 1e10 // 1/cm^3 | p*n=ni^2
 function pnJunction(props) {
   var depletion = function dep(NA, ND, VA) {
     var V0 = k*T/q*Math.log((NA*ND)/(ni*ni)) // V
-    var W = Math.sqrt(2*kS*e0/q*(1/NA + 1/ND)*(V0 - VA)) // cm?
-    var xp = W*ND/(NA + ND)
-    var xn = W*NA/(NA + ND)
+    var W = Math.sqrt(2*kS*e0/q*(1/NA + 1/ND)*(V0 - VA)) // cm
+    var xp = W*ND/(NA + ND) // cm
+    var xn = W*NA/(NA + ND) // cm
+
+    var A = 1e-2 // cm^2
+    var taup = 1e-6 // sec
+    var taun = 1e-6 // sec
+    var Dp = 27 // m^2/sec
+    var Dn = 27 // m^2/sec
+
+    var Is = q*A*(Math.sqrt(Dp/taup)*ni*ni/ND + Math.sqrt(Dn/taun)*ni*ni/NA) // A
+
     return {
       V0: V0,
       xp: xp,
@@ -184,6 +193,7 @@ function pnJunction(props) {
       junc.rho = _(rho.sampled(p.dx))
       junc.efield = _(rho.int(0).mult(q/(kS*e0)).sampled(p.dx))
       junc.V = _(rho.int(0).mult(-1/q).sampled(p.dx))
+      // junc.I = 
     }
   }
 
@@ -192,8 +202,8 @@ function pnJunction(props) {
     NA: 5e14,
     ND: 1e14,
     VA: 0,
-    L: 0.02,
-    dx: .0001
+    L: .002,
+    dx: .00001
   }
 
   if (arguments.length)
@@ -220,7 +230,7 @@ window.onload = function() {
     NA: 1e14,
     ND: 4e14,
     VA: 0,
-    L: .02
+    L: .002
   })
 
   var PNC = pnChart(junction)

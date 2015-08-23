@@ -10,8 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "d3": "^3.5.5",
-    "jquery": "^2.1.4",
-    "lazy.js": "^0.4.0",
-    "math": "0.0.3"
+    "lazy.js": "^0.4.0"
   }
 }
