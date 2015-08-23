@@ -140,11 +140,12 @@ function pnJunction(props) {
     var xp = W*ND/(NA + ND) // cm
     var xn = W*NA/(NA + ND) // cm
 
+    // http://www.ioffe.rssi.ru/SVA/NSM/Semicond/Si/electric.html
     var A = 1e-2 // cm^2
-    var taup = 1e-6 // sec
-    var taun = 1e-6 // sec
-    var Dp = 27 // m^2/sec
-    var Dn = 27 // m^2/sec
+    var taup = 1e-4 // sec
+    var taun = 1e-4 // sec
+    var Dp = 12 // cm^2/sec
+    var Dn = 36 // cm^2/sec
 
     var Is = q*A*(Math.sqrt(Dp/taup)*ni*ni/ND + Math.sqrt(Dn/taun)*ni*ni/NA) // A
 
