@@ -5,6 +5,7 @@ _ = Lazy
 function Poly(_coefs) {
   var poly = {
     coefs: _coefs,
+    dxmin: 1e-8,
     diff: function() {
       var dcoefs = poly.coefs
       dcoefs.forEach(function(coef, n) {
@@ -32,31 +33,26 @@ function Poly(_coefs) {
       var b = range[range.length-1]
 
       if (arguments.length === 1) {
-        if (typeof(range) === 'object') { // use optimal `dx`
-
-        }
+        if (typeof(range) === 'object') // use optimal `dx`
+          dx = (b-a)/10
         else
-          console.error('Error: Range required.')
+          console.error('Error: Range required by PolyFunc.sampled()')
       }
-      else if (arguments.length === 2) {
-        var X = _.range(a, b, dx)
 
-        var Y = X.map(function(x) {
-          return _(poly.coefs).map(function(coef, i) {
-            return coef*Math.pow(x, i)
-          }).sum()
-        })
+      var X = _.range(a, b+dx, dx)
 
-        return X.zip(Y.toArray()).map(function(x) {
-          return {
-            x: x[0],
-            y: x[1]
-          }
-        })
-      }
-      else {
-        console.error('Error: Invalid arguments for PolyFunc.sampled()')
-      }
+      var Y = X.map(function(x) {
+        return _(poly.coefs).map(function(coef, i) {
+          return coef*Math.pow(x, i)
+        }).sum()
+      })
+
+      return X.zip(Y.toArray()).map(function(x) {
+        return {
+          x: x[0],
+          y: x[1]
+        }
+      })
     },
     mult: function(a) {
       poly.coefs = poly.coefs.map(function(coef) {
@@ -124,7 +120,7 @@ function PolyFunc(_polys) {
     },
     sampled: function(dx) {
       return func.polys.map(function(spec) {
-        return spec.poly.sampled(spec.range, dx)
+        return spec.poly.sampled(spec.range)
       }).reduce(function(x, y) { return x.concat(y) })
     }
   }
