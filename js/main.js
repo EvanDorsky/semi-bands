@@ -30,15 +30,21 @@ function Poly(_coefs) {
     sampled: function(range, dx) {
       var a = range[0]
       var b = range[range.length-1]
-      if (arguments.length === 2) {
+
+      if (arguments.length === 1) {
+        if (typeof(range) === 'object') { // use optimal `dx`
+
+        }
+        else
+          console.error('Error: Range required.')
+      }
+      else if (arguments.length === 2) {
         var X = _.range(a, b, dx)
 
         var Y = X.map(function(x) {
-          return poly.coefs.map(function(coef, i) {
+          return _(poly.coefs).map(function(coef, i) {
             return coef*Math.pow(x, i)
-          }).reduce(function(x,y){
-            return x+y
-          })
+          }).sum()
         })
 
         return X.zip(Y.toArray()).map(function(x) {
@@ -47,6 +53,9 @@ function Poly(_coefs) {
             y: x[1]
           }
         })
+      }
+      else {
+        console.error('Error: Invalid arguments for PolyFunc.sampled()')
       }
     },
     mult: function(a) {
@@ -59,9 +68,7 @@ function Poly(_coefs) {
     sampledAt: function(x) {
       return _(poly.coefs).map(function(coef, i) {
         return coef*Math.pow(x, i)
-      }).memoize().reduce(function(x,y){
-        return x+y
-      })
+      }).sum()
     }
   }
 
