@@ -33,8 +33,8 @@ function Poly(_coefs) {
       var b = range[range.length-1]
 
       if (arguments.length === 1) {
-        if (typeof(range) === 'object') // use optimal `dx`
-          dx = (b-a)/10
+        if (typeof(range) === 'object')
+          dx = (b-a)/40.01
         else
           console.error('Error: Range required by PolyFunc.sampled()')
       }
