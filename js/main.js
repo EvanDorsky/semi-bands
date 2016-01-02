@@ -381,7 +381,7 @@ function semiChart() {
 
   chart.update = function(selection) {
     selection.each(function(data) {
-      var svg = d3.select(this).select('svg').data([data.toArray()])
+      var svg = d3.select(this).select('svg').datum(data.toArray())
       svg.select('.line')
         .attr('d', p.line)
     })
