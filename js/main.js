@@ -27,10 +27,10 @@ function Poly(_coefs) {
 
       return poly
     },
-    sampled: function(range, dx, last) {
+    sampled: function(range, dx) {
       var a = range[0]
-      var b = last? range[range.length-1]+dx : range[range.length-1]
-      if (arguments.length >= 2) {
+      var b = range[range.length-1]
+      if (arguments.length === 2) {
         var X = _.range(a, b, dx)
 
         var Y = X.map(function(x) {
@@ -47,9 +47,6 @@ function Poly(_coefs) {
             y: x[1]
           }
         })
-      }
-      else {
-        console.error('Error: Poly.sampled() requires at least 2 arguments.')
       }
     },
     mult: function(a) {
@@ -119,8 +116,8 @@ function PolyFunc(_polys) {
       return func
     },
     sampled: function(dx) {
-      return func.polys.map(function(spec, i) {
-        return spec.poly.sampled(spec.range, dx, i === func.polys.length-1? true : false)
+      return func.polys.map(function(spec) {
+        return spec.poly.sampled(spec.range, dx)
       }).reduce(function(x, y) { return x.concat(y) })
     }
   }
@@ -198,39 +195,6 @@ function pnJunction(props) {
       junc.efield = _(rho.int(0).mult(q/(kS*e0)).sampled(p.dx))
       junc.V = _(rho.int(0).mult(-1/q).sampled(p.dx))
       // junc.I = 
-
-      var testblock = [
-        {
-          poly: Poly([0]),
-          range: [-5, -1],
-          type: 'p'
-        },
-        {
-          poly: Poly([-1]),
-          range: [-1, 0],
-          type: 'pdep'
-        },
-        {
-          poly: Poly([1]),
-          range: [0, 1],
-          type: 'ndep'
-        },
-        {
-          poly: Poly([0]),
-          range: [1, 5],
-          type: 'n'
-        }
-      ]
-      var testfunc = new PolyFunc(testblock)
-
-      var testrho = _(testfunc.sampled(.5))
-      var testefield = _(testfunc.int(0).sampled(.5))
-      var testV = _(testfunc.int(0).sampled(.5))
-
-      console.log('testblock')
-      console.log(testblock)
-      console.log('testrho.toArray()')
-      console.log(testrho.toArray())
     }
   }
 
