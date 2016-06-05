@@ -1,142 +1,23 @@
 _ = Lazy
 
-// representation of a polynomial function
-// coefs = [a0, a1, a2, a3, ...]
-function Poly(_coefs) {
-  var poly = {
-    coefs: _coefs,
-    dxmin: 1e-8,
-    diff: function() {
-      var dcoefs = poly.coefs
-      dcoefs.forEach(function(coef, n) {
-        dcoefs[n] *= n
-      })
-
-      dcoefs.shift()
-      poly.coefs = dcoefs
-
-      return poly
-    },
-    int: function(C) {
-      var icoefs = poly.coefs
-      icoefs.forEach(function(coef, n) {
-        icoefs[n] /= n+1
-      })
-
-      icoefs.unshift(C)
-      poly.coefs = icoefs
-
-      return poly
-    },
-    sampled: function(range, dx) {
-      var a = range[0]
-      var b = range[range.length-1]
-
-      if (arguments.length === 1) {
-        if (typeof(range) === 'object')
-          dx = (b-a)/40.01
-        else
-          console.error('Error: Range required by PolyFunc.sampled()')
-      }
-
-      var X = _.range(a, b+dx, dx)
-
-      var Y = X.map(function(x) {
-        return _(poly.coefs).map(function(coef, i) {
-          return coef*Math.pow(x, i)
-        }).sum()
-      })
-
-      return X.zip(Y.toArray()).map(function(x) {
-        return {
-          x: x[0],
-          y: x[1]
-        }
-      })
-    },
-    mult: function(a) {
-      poly.coefs = poly.coefs.map(function(coef) {
-        return coef*a
-      })
-
-      return poly
-    },
-    sampledAt: function(x) {
-      return _(poly.coefs).map(function(coef, i) {
-        return coef*Math.pow(x, i)
-      }).sum()
-    }
-  }
-
-  return poly
-}
-
-function PolyFunc(_polys) {
-  var func = {
-    polys: _polys,
-    int: function() {
-      var temp = [{
-        poly: func.polys[0].poly.int(0),
-        range: func.polys[0].range
-      }]
-      for (var i = 1; i < func.polys.length; i++) {
-        var pol = func.polys[i].poly
-        var r = func.polys[i].range
-        var ptemp = temp[i-1].poly
-
-        var pre = pol.int(0).sampledAt(r[0])
-        var C = ptemp.sampledAt(r[0]) - pre
-        var pint = pol.diff().int(C)
-
-        temp.push({
-          poly: pint,
-          range: r
-        })
-      }
-
-      func.polys = temp
-
-      return func
-    },
-    diff: function() {
-      func.polys = func.polys.map(function(spec) {
-        return {
-          poly: spec.poly.diff(),
-          range: spec.range
-        }
-      })
-      
-      return func
-    },
-    mult: function(a) {
-      func.polys = func.polys.map(function(spec) {
-        return {
-          poly: spec.poly.mult(a),
-          range: spec.range
-        }
-      })
-      
-      return func
-    },
-    sampled: function(dx) {
-      return func.polys.map(function(spec) {
-        return spec.poly.sampled(spec.range)
-      }).reduce(function(x, y) { return x.concat(y) })
-    }
-  }
-
-  return func
-}
-
 // physical constants
 var e0 = 8.8542e-14 // F/cm
-var kS = 11.9
+var kS = 11.9 // unitless
 var q = 1.602e-19 // J
 var T = 300 // K
 var k = 1.381e-23 // J/K
 var ni = 1e10 // 1/cm^3 | p*n=ni^2
 
+/*
+  pnJunction() holds all the pn junction state
+    - auto-updates with getters/setters (#magic)
+*/
 function pnJunction(props) {
+  /*
+    depletion() calculates
+      - depletion region width/proportion
+      - current through the junction (not used yet)
+  */
   var depletion = function dep(NA, ND, VA) {
     var V0 = k*T/q*Math.log((NA*ND)/(ni*ni)) // V
     var W = Math.sqrt(2*kS*e0/q*(1/NA + 1/ND)*(V0 - VA)) // cm
@@ -151,6 +32,11 @@ function pnJunction(props) {
     var Dn = 36 // cm^2/sec
 
     var Is = q*A*(Math.sqrt(Dp/taup)*ni*ni/ND + Math.sqrt(Dn/taun)*ni*ni/NA) // A
+    var I = Is*Math.exp((q*VA)/(k*T)) - Is
+    // console.log('VA')
+    // console.log(VA)
+    // console.log('I')
+    // console.log(I)
 
     return {
       V0: V0,
@@ -159,6 +45,7 @@ function pnJunction(props) {
     }
   }
 
+  // the #this of pnJunction (1/2)
   var junc = {
     update: function pn() {
       var NA = p.NA
@@ -171,27 +58,27 @@ function pnJunction(props) {
 
       var block = [
         {
-          poly: Poly([0]),
+          poly: P.Poly([0]),
           range: [-L/2, -dep.xp],
           type: 'p'
         },
         {
-          poly: Poly([-q*NA]),
+          poly: P.Poly([-q*NA]),
           range: [-dep.xp, 0],
           type: 'pdep'
         },
         {
-          poly: Poly([q*ND]),
+          poly: P.Poly([q*ND]),
           range: [0, dep.xn],
           type: 'ndep'
         },
         {
-          poly: Poly([0]),
+          poly: P.Poly([0]),
           range: [dep.xn, L/2],
           type: 'n'
         }
       ]
-      var rho = new PolyFunc(block)
+      var rho = new P.PolyFunc(block)
 
       junc.block = block
       junc.rho = _(rho.sampled(p.dx))
@@ -201,7 +88,7 @@ function pnJunction(props) {
     }
   }
 
-  // defaults
+  // default pnJunction properties
   var p = {
     NA: 5e14,
     ND: 1e14,
@@ -216,6 +103,7 @@ function pnJunction(props) {
     })
 
   // generate getters/setters
+  // this is the #magic (1/2)
   Object.keys(p).forEach(function(key) {
     junc[key] = function(_) {
       if (!arguments.length) return p[key]
@@ -226,6 +114,7 @@ function pnJunction(props) {
   })
 
   junc.update()
+  // see? #this (2/2)
   return junc
 }
 
@@ -249,6 +138,7 @@ window.onload = function() {
   })
 }
 
+// calls all the plotting functions
 function pnChart(junc) {
   if (!arguments.length)
     console.error('Requires a pn junction!')
@@ -272,6 +162,7 @@ function pnChart(junc) {
     },
     update: function updatepnChart(opts) {
       Object.keys(opts).forEach(function(key) {
+        // that enables this unintelligible #magic (2/2)
         chart.junc[key](opts[key])
       })
 
@@ -300,8 +191,6 @@ function pnChart(junc) {
     .datum(chart.junc.block)
     .call(chart.block)
     .call(chart.block.update)
-
-  chart.subs.rho.plot.line().interpolate('step-after')
 
   for (var name in chart.subs) {
     var sub = chart.subs[name]
@@ -350,6 +239,8 @@ function pnChart(junc) {
   return chart
 }
 
+// plots charge density/e-field/voltage
+// charge density plot fill is done in css
 function semiChart() {
   var p = {
     margin: {top: 20, right: 20, bottom: 20, left: 20},
@@ -411,6 +302,7 @@ function semiChart() {
   return chart
 } // after http://bost.ocks.org/mike/chart/
 
+// plots semiconductor block diagram
 function semiBlockChart() {
   var p = {
     margin: {top: 20, right: 20, bottom: 20, left: 20},
@@ -470,6 +362,7 @@ function semiBlockChart() {
   return chart
 }
 
+// plots depletion region boundary lines
 function overlayChart() {
   var p = {
     margin: {top: 20, right: 20, bottom: 20, left: 20},
