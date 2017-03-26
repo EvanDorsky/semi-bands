@@ -25,6 +25,9 @@
 #block .n {
   fill: #fb9;
 }
+.plot-title {
+  font-family: Sans-Serif;
+}
 #overlay {
   position: absolute;
   top: 0;

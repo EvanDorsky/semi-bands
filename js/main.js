@@ -8,6 +8,9 @@ var T = 300 // K
 var k = 1.381e-23 // J/K
 var ni = 1e10 // 1/cm^3 | p*n=ni^2
 
+var plotWidth = 760
+var plotHeight = 160
+
 /*
     pnJunction() holds all the pn junction state
         - auto-updates with getters/setters (#magic)
@@ -152,6 +155,7 @@ function createJuncInputs(junction, chart) {
                     .attr('type', 'range')
                     .attr('min', inputInfo.min)
                     .attr('max', inputInfo.max)
+                    .attr('value', junction[p]())
                     .attr('class', p)
                     .on('input', updateParam)
                 break
@@ -254,13 +258,24 @@ function pnChart(junc) {
             .datum(chart.junc[name])
             .call(sub.plot)
             .call(sub.plot.update)
+            
+        d3.select('#'+name)
+            .select('svg')
+            .append('rect')
+            .attr('width', plotWidth)
+            .attr('height', 17)
+            .attr('x', 0)
+            .attr('y', 0)
+            .attr('fill', 'white')
+
+        d3.select('#'+name)
             .select('svg')
             .append('text')
             .text(sub.title)
-            .attr('x', 760/2)
+            .attr('class', 'plot-title')
+            .attr('x', plotWidth/2)
             .attr('y', 12)
             .attr('text-anchor', 'middle')
-            .attr('font-family', 'sans-serif')
     }
 
     d3.select('#container')
@@ -298,8 +313,8 @@ function pnChart(junc) {
 function semiChart() {
     var p = {
         margin: {top: 20, right: 20, bottom: 20, left: 20},
-        width: 760,
-        height: 140,
+        width: plotWidth,
+        height: plotHeight,
         xScale: d3.scale.linear(),
         yScale: d3.scale.linear(),
         line: d3.svg.line().x(X).y(Y)
@@ -360,8 +375,8 @@ function semiChart() {
 function semiBlockChart() {
     var p = {
         margin: {top: 20, right: 20, bottom: 20, left: 20},
-        width: 760,
-        height: 140,
+        width: plotWidth,
+        height: plotHeight,
         xScale: d3.scale.linear(),
         yScale: d3.scale.linear()
     }
@@ -420,8 +435,8 @@ function semiBlockChart() {
 function overlayChart() {
     var p = {
         margin: {top: 20, right: 20, bottom: 20, left: 20},
-        width: 760,
-        height: 140*4+20,
+        width: plotWidth,
+        height: plotHeight*4+20,
         xScale: d3.scale.linear()
     }
 
