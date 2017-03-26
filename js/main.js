@@ -44,10 +44,10 @@ function pnJunction(props) {
     // the #this of pnJunction (1/2)
     var junc = {
         update: function pn() {
-            var NA = p.NA
-            var ND = p.ND
-            var VA = p.VA
-            var L = p.L
+            var NA = junc.p.NA
+            var ND = junc.p.ND
+            var VA = junc.p.VA
+            var L = junc.p.L
 
             var dep = depletion(NA, ND, VA)
             junc.Vbi = dep.V0
@@ -87,24 +87,42 @@ function pnJunction(props) {
     }
 
     // default pnJunction properties
-    var p = {
+    junc.p = {
         NA: 5e14,
         ND: 1e14,
         VA: 0,
         L: .002
     }
+    junc.pInputs = {
+        NA: {
+            type: 'range',
+            min: 1e14,
+            max: 1e15
+        },
+        ND: {
+            type: 'range',
+            min: 1e14,
+            max: 1e15
+        },
+        VA: {
+            type: null
+        },
+        L: {
+            type: null
+        }
+    }
 
     if (arguments.length)
         Object.keys(props).forEach(function(key) {
-            p[key] = props[key]
+            junc.p[key] = props[key]
         })
 
     // generate getters/setters
     // this is the #magic (1/2)
-    Object.keys(p).forEach(function(key) {
+    Object.keys(junc.p).forEach(function(key) {
         junc[key] = function(_) {
-            if (!arguments.length) return p[key]
-            p[key] = _
+            if (!arguments.length) return junc.p[key]
+            junc.p[key] = _
             junc.update()
             return junc
         }
@@ -113,6 +131,35 @@ function pnJunction(props) {
     junc.update()
     // see? #this (2/2)
     return junc
+}
+
+function createJuncInputs(junction, chart) {
+    function updateParam(p) {
+        param = parseInt(this.value)
+        p = d3.select(this).attr('class')
+        
+        var upd = {}
+        upd[p] = param
+        chart.update(upd)
+    }
+
+    for (p in junction.pInputs) {
+        var inputInfo = junction.pInputs[p]
+        switch (inputInfo.type) {
+            case 'range':
+                d3.select('#controls')
+                    .insert('input')
+                    .attr('type', 'range')
+                    .attr('min', inputInfo.min)
+                    .attr('max', inputInfo.max)
+                    .attr('class', p)
+                    .on('input', updateParam)
+                break
+
+            default:
+                break
+        }
+    }
 }
 
 window.onload = function() {
@@ -124,6 +171,8 @@ window.onload = function() {
     })
 
     var PNC = pnChart(junction)
+
+    createJuncInputs(junction, PNC)
 
     _(['NA', 'ND']).each(function (param) {
         d3.select('button.'+param)
@@ -223,7 +272,8 @@ function pnChart(junc) {
 
     d3.select('#V')
         .on('mousemove', function() {
-            var V = chart.subs.V.plot.yScale().invert(d3.mouse(this)[1]-chart.subs.V.plot.margin().bottom)
+            var V = chart.subs.V.plot
+                .yScale().invert(d3.mouse(this)[1]-chart.subs.V.plot.margin().bottom)
             if (V<.05)
                 return
 
