@@ -33,10 +33,6 @@ function pnJunction(props) {
 
     var Is = q*A*(Math.sqrt(Dp/taup)*ni*ni/ND + Math.sqrt(Dn/taun)*ni*ni/NA) // A
     var I = Is*Math.exp((q*VA)/(k*T)) - Is
-    // console.log('VA')
-    // console.log(VA)
-    // console.log('I')
-    // console.log(I)
 
     return {
       V0: V0,
@@ -78,12 +74,14 @@ function pnJunction(props) {
           type: 'n'
         }
       ]
+      // gets modified #in-place (1/2)
       var rho = new P.PolyFunc(block)
 
       junc.block = block
-      junc.rho = _(rho.sampled(p.dx))
-      junc.efield = _(rho.int(0).mult(q/(kS*e0)).sampled(p.dx))
-      junc.V = _(rho.int(0).mult(-1/q).sampled(p.dx))
+      junc.rho = _(rho.sampled())
+      junc.efield = _(rho.int(0).mult(q/(kS*e0)).sampled())
+      junc.V = _(rho.int(0).mult(-1/q).sampled())
+      junc.bands = _(rho.mult(-q).sampled()) // yeah... #in-place (2/2)
       // junc.I = 
     }
   }
@@ -93,8 +91,7 @@ function pnJunction(props) {
     NA: 5e14,
     ND: 1e14,
     VA: 0,
-    L: .002,
-    dx: .00001
+    L: .002
   }
 
   if (arguments.length)
@@ -132,7 +129,10 @@ window.onload = function() {
     d3.select('button.'+param)
       .on('click', function() {
         var upd = {}
-        upd[param] = Number(d3.select('input.'+param).property('value'))
+
+        var paramIn = Number(d3.select('input.'+param).property('value'))
+        if (paramIn >= junction.minN() && paramIn <= junction.maxN())
+            upd[param] = paramIn
         PNC.update(upd)
       })
   })
@@ -157,6 +157,10 @@ function pnChart(junc) {
       },
       V: {
         title: 'Voltage',
+        plot: semiChart()
+      },
+      bands: {
+        title: 'Band Diagram',
         plot: semiChart()
       }
     },

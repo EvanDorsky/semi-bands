@@ -4,35 +4,35 @@ pdep =  #09f
 ndep =  complement(pdep)
 
 #container
-  position relative
-  
+    position relative
+    
 .line
-  fill none
-  stroke black
-  stroke-width 4
-  
+    fill none
+    stroke black
+    stroke-width 4
+    
 #rho .line
-  fill ptype
+    fill ptype
 
 #block
-  rect
-    stroke black
-    stroke-width 2
-  .p
-    fill ptype
-  .pdep
-    fill pdep
-  .ndep
-    fill ndep
-  .n
-    fill ntype
+    rect
+        stroke black
+        stroke-width 2
+    .p
+        fill ptype
+    .pdep
+        fill pdep
+    .ndep
+        fill ndep
+    .n
+        fill ntype
 
 #overlay
-  position absolute
-  top 0
-  z-index -1
+    position absolute
+    top 0
+    z-index -1
 
-  .line
-    stroke-width 2
-    stroke-dasharray 10,5,5,5
-    stroke #0008
+    .line
+        stroke-width 2
+        stroke-dasharray 10,5,5,5
+        stroke #0008

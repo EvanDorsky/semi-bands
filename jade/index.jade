@@ -6,7 +6,7 @@ html(lang="en")
     meta(http-equiv="X-UA-Compatible", content="IE=edge")
     meta(name="viewport", content="width=device-width, initial-scale=1")
 
-    title("Diode")
+    title Diode
 
     link(href="stylesheets/style.css", rel="stylesheet")
     script(type="text/javascript", src="node_modules/lazy.js/lazy.min.js")
@@ -16,10 +16,10 @@ html(lang="en")
     script(type="text/javascript", src="js/main.js")
 
   div#controls
-    input.NA
+    input(type=range).NA
     button.NA
       | Submit
-    input.ND
+    input(type=range).ND
     button.ND
       | Submit
   #container
